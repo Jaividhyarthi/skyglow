@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-surface-variant":"#414944","surface":"#fff8f4","error":"#ba1a1a","on-primary-fixed":"#002116","secondary-container":"#fda685","surface-container-highest":"#e9e1db","secondary-fixed-dim":"#ffb59a","on-tertiary-fixed":"#261900","on-error":"#ffffff","on-background":"#1e1b17","on-tertiary-fixed-variant":"#5d4200","primary-container":"#315c4c","surface-container-high":"#efe7e0","on-secondary-container":"#783920","on-surface":"#1e1b17","surface-container-low":"#fbf2ec","primary":"#184436","on-primary-fixed-variant":"#234e3f","on-primary":"#ffffff","on-tertiary-container":"#ebc377","secondary-fixed":"#ffdbcf","inverse-surface":"#34302c","primary-fixed":"#beedd8","secondary":"#904c31","tertiary-fixed-dim":"#e9c176","background":"#fff8f4","surface-dim":"#e1d9d2","on-secondary-fixed":"#380d00","primary-fixed-dim":"#a2d0bc","surface-container":"#f5ece6","inverse-primary":"#a2d0bc","surface-variant":"#e9e1db","outline":"#717974","surface-tint":"#3c6756","surface-bright":"#fff8f4","inverse-on-surface":"#f8efe9","error-container":"#ffdad6","tertiary-fixed":"#ffdea4","on-primary-container":"#a4d2be","surface-container-lowest":"#ffffff","on-tertiary":"#ffffff","on-secondary":"#ffffff","tertiary":"#503900","tertiary-container":"#6c4f0e","on-error-container":"#93000a","on-secondary-fixed-variant":"#72351c","outline-variant":"#c0c8c3"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"2.5rem","space-md":"1rem","space-lg":"1.5rem","space-xs":"0.25rem","space-sm":"0.5rem","gutter-mobile":"1rem","gutter":"1.5rem","space-xl":"2.5rem","margin-mobile":"1.25rem"},"fontFamily":{"headline-lg-mobile":["Newsreader"],"label-md":["JetBrains Mono"],"body-lg":["Geist"],"body-sm":["Geist"],"headline-md":["Newsreader"],"display-mobile":["Newsreader"],"code-snippet":["JetBrains Mono"],"title-sm":["Geist"],"headline-lg":["Newsreader"],"title-md":["Geist"],"display":["Newsreader"],"body-md":["Geist"],"headline-sm":["Newsreader"],"label-sm":["JetBrains Mono"]},"fontSize":{"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"400"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"500"}],"body-lg":["16px",{"lineHeight":"26px","fontWeight":"400"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"500"}],"display-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.01em","fontWeight":"400"}],"code-snippet":["12.5px",{"lineHeight":"18px","fontWeight":"400"}],"title-sm":["14px",{"lineHeight":"20px","fontWeight":"600"}],"headline-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.015em","fontWeight":"400"}],"title-md":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"display":["48px",{"lineHeight":"56px","letterSpacing":"-0.02em","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"500"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.03em","fontWeight":"500"}]}}}};</script></head><body class="bg-background font-body-md text-body-md text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed"><aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low border-r border-outline-variant z-50 flex flex-col justify-between"><div class="flex flex-col flex-1 min-h-0"><div class="p-space-md border-b border-outline-variant bg-surface-container-lowest"><div class="flex items-center gap-space-sm"><img alt="Skyglow Lens Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XGDG37rGfJxdc3tysv2V6YColYT5cgs4jU-cmcEnvOQthQlHlfP6HaO33rjW7lFlG0WFbqJi3kty0daolyBIqsxCOFeFwgOOmuhsn3r5OUYGILXfGNlDDNoBvBkA3gy-WihjhYgdSxOzrC7Ow5aomIG47JKewIMBmSA2SPugyXh4g1z6F0kutBzMWeEtu47b5T_CMtlhO4jNtlqr_lYjXUmWe-xXoLQ4u9AOZ-L6DB2C52tUXADPsqYg"/><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm text-primary leading-none tracking-tight font-semibold">SKYGLOW</span><span class="font-label-sm text-[9px] tracking-wider text-outline uppercase font-medium mt-space-xs">REPUTATION INTELLIGENCE</span></div></div></div><div class="p-space-sm border-b border-outline-variant bg-surface-container"><button class="w-full flex items-center justify-between px-space-sm py-space-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface-variant hover:border-primary transition-colors" type="button"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[16px] text-outline">search</span><span class="font-body-sm text-body-sm text-on-surface-variant">Search entities...</span></div><kbd class="font-label-sm text-label-sm px-1.5 py-0.5 bg-surface-container-high border border-outline-variant rounded text-on-surface-variant">⌘K</kbd></button></div><nav class="flex-1 px-space-sm py-space-md space-y-space-xs overflow-y-auto" data-active-classes="bg-primary text-on-primary font-semibold shadow-none"><div class="px-space-xs pb-space-xs"><span class="font-label-sm text-label-sm uppercase text-outline tracking-wider">Intelligence Dossiers</span></div><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs rounded transition-colors bg-primary text-on-primary font-semibold shadow-none" data-path="investigation-home" href="#"><span class="material-symbols-outlined text-[18px]">travel_explore</span><span>Investigation Home</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="workspace" href="#"><span class="material-symbols-outlined text-[18px]">folder_supervised</span><span>Workspace</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="network-explorer" href="#"><span class="material-symbols-outlined text-[18px]">hub</span><span>Network Explorer</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="voice-investigator" href="#"><span class="material-symbols-outlined text-[18px]">record_voice_over</span><span>Voice Investigator</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="reputation-profile" href="#"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Reputation Profile</span></a><div class="pt-space-md px-space-xs pb-space-xs"><span class="font-label-sm text-label-sm uppercase text-outline tracking-wider">Lab &amp; Instruments</span></div><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="research-lab" href="#"><span class="material-symbols-outlined text-[18px]">science</span><span>Research Lab</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-sm text-body-sm" data-path="extension-preview" href="#"><span class="material-symbols-outlined text-[18px]">extension</span><span>Extension Preview</span></a></nav></div><div class="p-space-sm border-t border-outline-variant bg-surface-container-lowest space-y-space-sm"><div class="p-space-xs bg-surface-container rounded border border-outline-variant"><div class="flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-sm text-label-sm text-primary font-medium">Live Feed: Active</span></div><span class="font-label-sm text-label-sm text-outline">42ms</span></div><div class="flex items-center justify-between mt-space-xs pt-space-xs border-t border-outline-variant"><span class="font-label-sm text-[10px] text-outline">SYNC: 14:02:18 UTC</span><span class="font-label-sm text-[10px] text-primary uppercase font-medium">VERIFIED</span></div></div><div class="flex items-center justify-between px-space-xs pt-space-xs text-on-surface-variant"><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[14px]">help_outline</span>Docs</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[14px]">tune</span>Settings</a><span class="font-label-sm text-label-sm text-outline">v2.4.1</span></div></div></aside><div class="pl-[260px]"><header class="fixed top-0 left-[260px] right-0 h-14 bg-surface-container-lowest border-b border-outline-variant z-40 px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline"><span class="text-on-surface font-semibold">OSINT</span><span class="text-outline">/</span><span>TARGET_ANALYSIS</span></div><div class="h-4 w-px bg-outline-variant"></div><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm text-outline">TARGET:</span><div class="relative inline-block"><select class="font-label-md text-label-md bg-surface-container border border-outline-variant rounded px-2 py-0.5 text-on-surface font-medium cursor-pointer focus:outline-none focus:border-primary"><option selected="">facebook/react</option><option>v0-clone/suspicious-ai</option><option>expressjs/express</option><option>pytorch/pytorch</option></select></div></div><div class="flex items-center gap-1.5 px-2 py-0.5 bg-surface-container border border-outline-variant rounded font-label-sm text-label-sm text-primary"><span class="h-1.5 w-1.5 rounded-full bg-primary"></span><span>LIVE TELEMETRY</span></div></div><div class="flex items-center gap-space-md"><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-2 text-[16px] text-outline">search</span><input class="font-body-sm text-body-sm bg-surface-container border border-outline-variant rounded pl-7 pr-3 py-1 w-72 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary" placeholder="Filter provenance graph, hashes, CVEs..." type="text"/></div><button class="p-1 text-on-surface-variant hover:text-primary transition-colors relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-secondary"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-14 bg-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Editorial Header & Masthead Callout -->
+<section class="w-full max-w-[1440px] mx-auto px-margin-mobile lg:px-margin pt-space-xl pb-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md pb-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm font-label-sm text-label-sm uppercase tracking-wider text-outline">
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">Archival Dossier #882</span>
+<span>•</span>
+<span>Open-Source Provenance &amp; Forensic Auditing</span>
+</div>
+<h1 class="font-display text-display text-on-surface tracking-tight max-w-4xl">
+          Popularity is easy to manufacture. <span class="italic font-normal text-primary">Trust isn’t.</span>
+</h1>
+</div>
+<div class="flex items-center gap-space-md self-start lg:self-end">
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-label-sm text-outline">ACTIVE AUDIT NODES</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">1,409 Global Telemetry Sinks</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">policy</span>
+</div>
+</div>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl pt-space-xs">
+      Investigate synthetic star inflation, coordinated promotion cartels, code security anomalies, and dependency integrity across GitHub before trusting your infrastructure to open source.
+    </p>
+<!-- Main Investigation Input Console -->
+<div class="mt-space-lg p-space-md lg:p-space-lg rounded-xl bg-surface-container-lowest shadow-sm">
+<form class="flex flex-col md:flex-row items-stretch gap-space-sm" id="dossier-search-form" onsubmit="event.preventDefault(); window.triggerScan();">
+<div class="relative flex-1 flex items-center bg-surface-container rounded-lg px-space-md py-space-xs focus-within:bg-surface-container-lowest focus-within:ring-2 focus-within:ring-primary-container transition-all">
+<span class="material-symbols-outlined text-outline mr-space-sm text-[20px]">terminal</span>
+<input class="w-full bg-transparent font-code-snippet text-code-snippet text-on-surface placeholder:text-outline focus:outline-none" id="repo-target-input" placeholder="https://github.com/organization/target-repository" type="text" value="https://github.com/auto-coder/ai-agent-v2"/>
+<button class="ml-space-sm flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant hover:text-primary bg-surface-container-high px-2 py-1 rounded transition-colors" onclick="navigator.clipboard.readText().then(t =&gt; { if(t) document.getElementById('repo-target-input').value = t; })" title="Paste from clipboard" type="button">
+<span class="material-symbols-outlined text-[14px]">content_paste</span>
+<span>Paste</span>
+</button>
+</div>
+<button class="flex items-center justify-center gap-space-sm px-space-lg py-3 rounded-lg bg-primary text-on-primary font-title-sm text-title-sm hover:bg-primary-container transition-all cursor-pointer shadow-sm active:scale-[0.99]" type="submit">
+<span class="material-symbols-outlined text-[18px]">travel_explore</span>
+<span>Investigate Repository</span>
+</button>
+</form>
+<!-- Exemplar Quick Tags -->
+<div class="flex flex-wrap items-center gap-space-sm mt-space-md pt-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Pre-computed Dossiers:</span>
+<button class="flex items-center gap-1.5 px-space-sm py-1 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors text-left" onclick="setRepo('tailwindlabs/tailwindcss', 'clean')" type="button">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-code-snippet text-code-snippet text-on-surface">tailwindlabs/tailwindcss</span>
+<span class="font-label-sm text-[10px] text-primary font-semibold uppercase px-1 py-0.5 rounded bg-primary-fixed">Clean</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-1 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors text-left" onclick="setRepo('auto-coder/ai-agent-v2', 'risk')" type="button">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-code-snippet text-code-snippet text-on-surface">auto-coder/ai-agent-v2</span>
+<span class="font-label-sm text-[10px] text-secondary font-semibold uppercase px-1 py-0.5 rounded bg-secondary-fixed">High Risk Anomaly</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-1 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors text-left" onclick="setRepo('crypto-ledger/node-core', 'syndicate')" type="button">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-code-snippet text-code-snippet text-on-surface">crypto-ledger/node-core</span>
+<span class="font-label-sm text-[10px] text-secondary font-semibold uppercase px-1 py-0.5 rounded bg-secondary-container text-on-secondary-container">Syndicate</span>
+</button>
+<button class="flex items-center gap-1.5 px-space-sm py-1 rounded-md bg-surface-container hover:bg-surface-container-high transition-colors text-left" onclick="setRepo('vuejs/core', 'verified')" type="button">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-code-snippet text-code-snippet text-on-surface">vuejs/core</span>
+<span class="font-label-sm text-[10px] text-primary font-semibold uppercase px-1 py-0.5 rounded bg-primary-fixed">Baseline Verified</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Split Analytical Preview: Timeline Anomaly vs Sybil Network Mesh -->
+<section class="w-full max-w-[1440px] mx-auto px-margin-mobile lg:px-margin py-space-md">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Visual 1: Star Velocity Inflection Curve Analysis -->
+<div class="lg:col-span-7 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Telemetry Artifact #409</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Growth Discontinuity &amp; Step-Function Injections</h3>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              94.2% Anomaly Probability
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs max-w-xl">
+            Comparative analysis of target <code class="font-code-snippet text-code-snippet bg-surface-container px-1 py-0.5 rounded">ai-agent-v2</code> star telemetry against empirical organic logistic adoption rates. Observe 4 synchronous vertical leaps correlating with commercial bounty campaigns.
+          </p>
+</div>
+<!-- Inline SVG Star Growth Chart -->
+<div class="my-space-md bg-surface-container-low p-space-md rounded-lg">
+<div class="flex items-center justify-between font-label-sm text-[11px] text-outline mb-2">
+<span>AUDIT HORIZON: 180 DAYS</span>
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-primary"></span> Organic Baseline</span>
+<span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-secondary stroke-dashed"></span> Target Repository (Observed)</span>
+</div>
+</div>
+<svg class="w-full h-44 text-on-surface overflow-visible" fill="none" viewbox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+<!-- Grid Lines -->
+<line stroke="currentColor" stroke-dasharray="2 4" stroke-opacity="0.08" x1="40" x2="680" y1="20" y2="20"></line>
+<line stroke="currentColor" stroke-dasharray="2 4" stroke-opacity="0.08" x1="40" x2="680" y1="70" y2="70"></line>
+<line stroke="currentColor" stroke-dasharray="2 4" stroke-opacity="0.08" x1="40" x2="680" y1="120" y2="120"></line>
+<line stroke="currentColor" stroke-dasharray="2 4" stroke-opacity="0.08" x1="40" x2="680" y1="170" y2="170"></line>
+<!-- Axis Labels -->
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" text-anchor="end" x="30" y="24">28K ★</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" text-anchor="end" x="30" y="74">18K ★</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" text-anchor="end" x="30" y="124">8K ★</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" text-anchor="end" x="30" y="174">0 ★</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" x="40" y="195">OCT 01</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" x="240" y="195">NOV 15</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" x="440" y="195">DEC 30</text>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="9" opacity="0.4" x="640" y="195">PRESENT</text>
+<!-- Organic Ideal Logistic S-Curve (Primary Forest Green) -->
+<path d="M40 168 C 180 165, 300 150, 420 110 C 520 75, 600 55, 680 48" stroke="#184436" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Anomaly Step Discontinuity Line (Terracotta/Secondary) -->
+<path d="M40 168 L 180 168 L 182 118 L 320 116 L 322 72 L 490 70 L 492 28 L 680 25" stroke="#904c31" stroke-linejoin="round" stroke-width="2.5"></path>
+<!-- Callout Pin on Discontinuity 1 -->
+<circle cx="182" cy="118" fill="#904c31" r="4"></circle>
+<circle cx="182" cy="118" fill="#fda685" fill-opacity="0.4" r="8"></circle>
+<!-- Callout Pin on Discontinuity 3 -->
+<circle cx="492" cy="28" fill="#904c31" r="4"></circle>
+<circle cx="492" cy="28" fill="#fda685" fill-opacity="0.4" r="8"></circle>
+<!-- Anomaly Box Stamp -->
+<g transform="translate(192, 90)">
+<rect fill="#f5ece6" height="22" rx="3" width="138"></rect>
+<text fill="#783920" font-family="JetBrains Mono" font-size="9.5" font-weight="600" x="6" y="15">+5,200 ★ IN 47 SECS</text>
+</g>
+</svg>
+</div>
+<div class="grid grid-cols-3 gap-space-sm pt-space-xs font-label-sm text-label-sm">
+<div class="p-2.5 rounded bg-surface-container">
+<span class="text-outline uppercase">Raw Star Count</span>
+<p class="font-headline-sm text-headline-sm text-on-surface mt-0.5">27,842</p>
+</div>
+<div class="p-2.5 rounded bg-surface-container">
+<span class="text-outline uppercase">Synthetic Estimate</span>
+<p class="font-headline-sm text-headline-sm text-secondary mt-0.5">19,104 (68%)</p>
+</div>
+<div class="p-2.5 rounded bg-surface-container">
+<span class="text-outline uppercase">Audited Organic Baseline</span>
+<p class="font-headline-sm text-headline-sm text-primary mt-0.5">8,738</p>
+</div>
+</div>
+</div>
+<!-- Visual 2: Coordinated Sybil Cluster Graph -->
+<div class="lg:col-span-5 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Sybil Heuristics</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Syndicate Cross-Fork Topology</h3>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm text-on-surface-variant font-medium">
+              34 Hub Nodes
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+            Unveils inter-locking star rings where 91.4% of dormant ghost profiles star the identical suite of 7 commercial AI wrapper utilities simultaneously.
+          </p>
+</div>
+<!-- Node Graph Visualization -->
+<div class="my-space-md p-space-sm bg-surface-container-low rounded-lg relative overflow-hidden flex items-center justify-center min-h-[180px]">
+<svg class="w-full h-44 text-on-surface overflow-visible" fill="none" viewbox="0 0 380 180" xmlns="http://www.w3.org/2000/svg">
+<!-- Connecting Edges -->
+<path d="M190 90 L80 40 M190 90 L300 45 M190 90 L60 120 M190 90 L120 155 M190 90 L260 145 M190 90 L320 110 M80 40 L60 120 M300 45 L320 110 M120 155 L260 145" stroke="currentColor" stroke-opacity="0.15" stroke-width="1.2"></path>
+<!-- Coordinated Secondary Links -->
+<line stroke="#fda685" stroke-dasharray="3 3" stroke-width="1" x1="80" x2="300" y1="40" y2="45"></line>
+<line stroke="#fda685" stroke-dasharray="3 3" stroke-width="1" x1="60" x2="320" y1="120" y2="110"></line>
+<!-- Cluster Peripheral Nodes -->
+<circle cx="80" cy="40" fill="#efe7e0" r="10"></circle>
+<circle cx="80" cy="40" fill="#717974" r="4"></circle>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="8" opacity="0.6" text-anchor="middle" x="80" y="24">c-fork-91</text>
+<circle cx="300" cy="45" fill="#efe7e0" r="9"></circle>
+<circle cx="300" cy="45" fill="#717974" r="3.5"></circle>
+<text fill="currentColor" font-family="JetBrains Mono" font-size="8" opacity="0.6" text-anchor="middle" x="300" y="28">c-fork-14</text>
+<circle cx="60" cy="120" fill="#ffd6c9" r="12"></circle>
+<circle cx="60" cy="120" fill="#904c31" r="5"></circle>
+<text fill="#904c31" font-family="JetBrains Mono" font-size="8" text-anchor="middle" x="60" y="143">sybil-hub-a</text>
+<circle cx="120" cy="155" fill="#efe7e0" r="8"></circle>
+<circle cx="120" cy="155" fill="#717974" r="3"></circle>
+<circle cx="260" cy="145" fill="#ffd6c9" r="11"></circle>
+<circle cx="260" cy="145" fill="#904c31" r="4.5"></circle>
+<text fill="#904c31" font-family="JetBrains Mono" font-size="8" text-anchor="middle" x="260" y="167">sybil-hub-b</text>
+<circle cx="320" cy="110" fill="#efe7e0" r="8"></circle>
+<circle cx="320" cy="110" fill="#717974" r="3"></circle>
+<!-- Core Central Target Node -->
+<circle cx="190" cy="90" fill="#315c4c" r="22"></circle>
+<circle cx="190" cy="90" r="28" stroke="#184436" stroke-dasharray="2 3" stroke-width="1.5"></circle>
+<text fill="#ffffff" font-family="Newsreader" font-size="10" font-weight="600" text-anchor="middle" x="190" y="94">TARGET</text>
+</svg>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded bg-surface-container">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">share</span>
+<span class="text-on-surface">Circularity Co-occurrence Coefficient:</span>
+</div>
+<span class="font-code-snippet text-code-snippet font-semibold text-secondary">0.891 (Severe)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Editorial Research Imagery & Threat Briefing Interlude -->
+<section class="w-full max-w-[1440px] mx-auto px-margin-mobile lg:px-margin py-space-md">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 with Visual -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+<div class="h-44 w-full relative overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="A vintage cryptography lab table with antique ledger books, cold-pressed archival paper documents, magnifying lenses, and analog forensic instruments under soft directional morning window light with olive green and warm cream tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYEB3mpp5hA2VUltCw7GQSAOvaPhSYPIOGqYqUf8jc68i_0ByCV7Nq4bOPqqltLC90dlc_UGwqjv1xde38XxO8pliRHr6oM_Ru8_C1XoZUPEBn2kOKQ2klxS5ZYkqch-f41XQpOE1miyyc0BVbH4cJqKjMKav4SeG2Q3QeipPLTRp71Yzx5bUt-Lb2Iva39zIBaUn8AxdH5nJdRTc6giHOm3327pm6s3hh4r6APhFyDI7e6HwsPhNJ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<span class="absolute top-3 left-3 font-label-sm text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-surface-container-lowest/90 text-primary">FIELD REPORT #112</span>
+</div>
+<div class="p-space-md flex-1 flex flex-col justify-between">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Manufactured Trust &amp; The Procurement Blindspot</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+              Enterprise teams evaluate security posture using public engagement metrics. Synthetic GitHub stars provide attackers with instant social proof to bypass gatekeeping filters.
+            </p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/40 flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>READ WHITE-PAPER</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 2 with Visual -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+<div class="h-44 w-full relative overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Macro view of fine-grain paper documents stamped with deep green cryptographic seals, red wax insignia, and typewriter technical logs with warm natural lighting and high tactile paper texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfjr2CtoGC6eBMN0_CvQZwtJ6YsKN5-WYqu1v4CD1J_iGb_6eAqdIAQHK3p43ykv8x39mYuD1uJrrztq4aSaDUbO6mXfiPKvwVEilSp-1GVjwsMAJAt75yJ6VES1Us1nhAhgAFBbehRdFugt0A88ARI_Wt9BKFkACce7YeeVjMPg4yR1rgAGG7sgsb8jPuBH8v_7nYyNTj1N7Hj-LhPzx0K6CxZo8jBRXDOIZgiKrG5duC8N8iC2Cq"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<span class="absolute top-3 left-3 font-label-sm text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-surface-container-lowest/90 text-secondary">VULNERABILITY VECTOR</span>
+</div>
+<div class="p-space-md flex-1 flex flex-col justify-between">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Commit Spoofing via Disposable Committer Ident</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+              Unsigned git commits masquerade as esteemed core engineers. Our audit verifies GPG cryptographic chains to expose ghost contributors within pull requests.
+            </p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/40 flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>INSPECT SIGNATURE PROOF</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Card 3 with Visual -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+<div class="h-44 w-full relative overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Detailed close-up of a server terminal displaying hexadecimal code disassembly and node network graphs on an ivory-toned paper monitor with minimalist typography and elegant warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDllpVNgtbNjWseAbsSJYALuwVsByBcj_ZO1ZqMrFXp6reI9NLAzrFy6b2NcQQc6elE3TknXLzR9Tr9Br6B9FLC11cYsgBHmCcb3B0WWX5kClh_bYOckb3V16-X-YtlC1PUdKKo0GNr5MeLpr3qZEhf6Z18ukLCIIlxJaixcTnaZEZ8ORCLauzMvnYmsbW8hP6eC96aQFdTnBvqCeqVC7IfbeUSn_-zRFoHeCm7IaPzDAtiDJz5D1gf"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<span class="absolute top-3 left-3 font-label-sm text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-surface-container-lowest/90 text-tertiary">SUPPLY CHAIN INTEL</span>
+</div>
+<div class="p-space-md flex-1 flex flex-col justify-between">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Transitive Abandonment &amp; Zombie Packages</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+              43% of popular utility packages depend on orphaned dependencies controlled by expired domains. Explore our automated ownership takeover radar.
+            </p>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant/40 flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>VIEW TRANSITIVE GRAPH</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Four Analysis Categories Preview Grid -->
+<section class="w-full max-w-[1440px] mx-auto px-margin-mobile lg:px-margin py-space-lg">
+<div class="flex items-end justify-between mb-space-md">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Forensic Dimensions</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Four Pillars of Reputation Intelligence</h2>
+</div>
+<span class="hidden md:block font-body-sm text-body-sm text-on-surface-variant max-w-sm text-right">
+        Each repository undergoes automated multi-layer triangulation spanning ledger records, committer identity, and peer clusters.
+      </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Pillar 1 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm hover:translate-y-[-2px] transition-transform flex flex-col justify-between">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary mb-space-md">
+<span class="material-symbols-outlined text-[22px]">star_rate</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Dimension 01</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-0.5 mb-space-xs">Popularity Authenticity</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Unmasks automated star purchases and artificial engagement inflation via longitudinal velocity inspection.
+          </p>
+</div>
+<div class="mt-space-md pt-space-md border-t border-outline-variant/30 space-y-2 font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Star velocity inflection points</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Disposable stargazer cohorts</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Geographic concentration index</span>
+</div>
+</div>
+</div>
+<!-- Pillar 2 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm hover:translate-y-[-2px] transition-transform flex flex-col justify-between">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary mb-space-md">
+<span class="material-symbols-outlined text-[22px]">hub</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Dimension 02</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-0.5 mb-space-xs">Promotion Networks</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Identifies coordinated PR rings, upvote syndicates, and mutual admiration circles designed to deceive trending feeds.
+          </p>
+</div>
+<div class="mt-space-md pt-space-md border-t border-outline-variant/30 space-y-2 font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Coordinated star clusters</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Circular cross-fork networks</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Synchronous account age analysis</span>
+</div>
+</div>
+</div>
+<!-- Pillar 3 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm hover:translate-y-[-2px] transition-transform flex flex-col justify-between">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary mb-space-md">
+<span class="material-symbols-outlined text-[22px]">gavel</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Dimension 03</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-0.5 mb-space-xs">Code Security</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Scans cryptographic provenance, verifying whether release artifacts match commit histories and authored origins.
+          </p>
+</div>
+<div class="mt-space-md pt-space-md border-t border-outline-variant/30 space-y-2 font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Rapid commit spoofing alerts</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Unsigned contributor surges</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Suspicious binary blob releases</span>
+</div>
+</div>
+</div>
+<!-- Pillar 4 -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm hover:translate-y-[-2px] transition-transform flex flex-col justify-between">
+<div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary mb-space-md">
+<span class="material-symbols-outlined text-[22px]">account_tree</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Dimension 04</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-0.5 mb-space-xs">Dependency Reliability</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Tracks structural fragility down the subtree, measuring core developer fatigue and supply chain takeover vectors.
+          </p>
+</div>
+<div class="mt-space-md pt-space-md border-t border-outline-variant/30 space-y-2 font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Deep supply chain depth index</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Maintainer turnover volatility</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>Abandoned transitives watch</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Investigations Feed Table -->
+<section class="w-full max-w-[1440px] mx-auto px-margin-mobile lg:px-margin pt-space-md pb-space-xl">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-md border-b border-outline-variant/30">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Real-Time Registry Dossiers</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mt-0.5">Recent Repository Audits</h3>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-sm py-1.5 rounded bg-surface-container hover:bg-surface-container-high font-label-sm text-label-sm text-on-surface font-medium transition-colors" type="button">
+            All Verdicts
+          </button>
+<button class="px-space-sm py-1.5 rounded bg-surface-container hover:bg-surface-container-high font-label-sm text-label-sm text-secondary font-medium transition-colors" type="button">
+            Anomalies Only (12)
+          </button>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-outline">Auto-refresh: 15s</span>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto mt-space-md">
+<table class="w-full text-left font-body-sm text-body-sm border-collapse">
+<thead>
+<tr class="font-label-sm text-label-sm text-outline uppercase border-b border-outline-variant/40 bg-surface-container-low/50">
+<th class="py-space-sm px-space-md font-medium">Repository Identity</th>
+<th class="py-space-sm px-space-sm font-medium">Audit Verdict</th>
+<th class="py-space-sm px-space-sm font-medium">Raw Stars</th>
+<th class="py-space-sm px-space-sm font-medium">Estimated Organic</th>
+<th class="py-space-sm px-space-sm font-medium">Anomaly Score</th>
+<th class="py-space-sm px-space-sm font-medium">Date Stamp</th>
+<th class="py-space-sm px-space-sm text-right font-medium">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1: Malicious Anomaly -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">warning</span>
+<div>
+<span class="font-code-snippet text-code-snippet font-semibold text-on-surface block">auto-coder/ai-agent-v2</span>
+<span class="font-label-sm text-[11px] text-outline">LLM Orchestration Tooling</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Suspicious signals detected
+                </span>
+</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-on-surface">27,842</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-secondary font-medium">8,738 (31%)</td>
+<td class="py-space-md px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="w-[94%] h-full bg-secondary"></div>
+</div>
+<span class="font-code-snippet text-code-snippet font-semibold text-secondary">94.2</span>
+</div>
+</td>
+<td class="py-space-md px-space-sm font-label-sm text-label-sm text-outline">12 mins ago</td>
+<td class="py-space-md px-space-sm text-right">
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-primary hover:text-on-primary font-label-sm text-label-sm transition-all text-on-surface-variant" type="button">
+                  Inspect
+                </button>
+</td>
+</tr>
+<!-- Row 2: Clean Verified -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">verified</span>
+<div>
+<span class="font-code-snippet text-code-snippet font-semibold text-on-surface block">tailwindlabs/tailwindcss</span>
+<span class="font-label-sm text-[11px] text-outline">Utility-first CSS Framework</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  No significant signals
+                </span>
+</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-on-surface">81,419</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-primary font-medium">79,980 (98%)</td>
+<td class="py-space-md px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="w-[4%] h-full bg-primary"></div>
+</div>
+<span class="font-code-snippet text-code-snippet font-semibold text-primary">03.8</span>
+</div>
+</td>
+<td class="py-space-md px-space-sm font-label-sm text-label-sm text-outline">38 mins ago</td>
+<td class="py-space-md px-space-sm text-right">
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-primary hover:text-on-primary font-label-sm text-label-sm transition-all text-on-surface-variant" type="button">
+                  Inspect
+                </button>
+</td>
+</tr>
+<!-- Row 3: Coordinated Syndicate -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">group_work</span>
+<div>
+<span class="font-code-snippet text-code-snippet font-semibold text-on-surface block">crypto-ledger/node-core</span>
+<span class="font-label-sm text-[11px] text-outline">Distributed Consensus Daemon</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Suspicious signals detected
+                </span>
+</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-on-surface">14,210</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-secondary font-medium">3,410 (24%)</td>
+<td class="py-space-md px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="w-[88%] h-full bg-secondary"></div>
+</div>
+<span class="font-code-snippet text-code-snippet font-semibold text-secondary">88.5</span>
+</div>
+</td>
+<td class="py-space-md px-space-sm font-label-sm text-label-sm text-outline">1 hour ago</td>
+<td class="py-space-md px-space-sm text-right">
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-primary hover:text-on-primary font-label-sm text-label-sm transition-all text-on-surface-variant" type="button">
+                  Inspect
+                </button>
+</td>
+</tr>
+<!-- Row 4: Insufficient Evidence -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[20px]">help_center</span>
+<div>
+<span class="font-code-snippet text-code-snippet font-semibold text-on-surface block">micro-kernel/fast-rpc</span>
+<span class="font-label-sm text-[11px] text-outline">Lightweight Async IPC</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                  Insufficient evidence
+                </span>
+</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-on-surface">1,840</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-outline font-medium">Telemetry Pending</td>
+<td class="py-space-md px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="w-[45%] h-full bg-tertiary"></div>
+</div>
+<span class="font-code-snippet text-code-snippet font-semibold text-tertiary">45.0</span>
+</div>
+</td>
+<td class="py-space-md px-space-sm font-label-sm text-label-sm text-outline">2 hours ago</td>
+<td class="py-space-md px-space-sm text-right">
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-primary hover:text-on-primary font-label-sm text-label-sm transition-all text-on-surface-variant" type="button">
+                  Inspect
+                </button>
+</td>
+</tr>
+<!-- Row 5: Clean Baseline Verified -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">verified</span>
+<div>
+<span class="font-code-snippet text-code-snippet font-semibold text-on-surface block">vuejs/core</span>
+<span class="font-label-sm text-[11px] text-outline">Progressive JavaScript Framework</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  No significant signals
+                </span>
+</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-on-surface">45,920</td>
+<td class="py-space-md px-space-sm font-code-snippet text-code-snippet text-primary font-medium">44,800 (97%)</td>
+<td class="py-space-md px-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-16 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="w-[6%] h-full bg-primary"></div>
+</div>
+<span class="font-code-snippet text-code-snippet font-semibold text-primary">05.2</span>
+</div>
+</td>
+<td class="py-space-md px-space-sm font-label-sm text-label-sm text-outline">3 hours ago</td>
+<td class="py-space-md px-space-sm text-right">
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-primary hover:text-on-primary font-label-sm text-label-sm transition-all text-on-surface-variant" type="button">
+                  Inspect
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Feed Footer Pagination & Audit Meta -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-md mt-space-sm border-t border-outline-variant/30 font-label-sm text-label-sm text-outline">
+<div>Showing 5 of 3,892 verified intelligence logs</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant disabled:opacity-40" disabled="" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold">1</span>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Client Behavior -->
+<script>
+    window.setRepo = function(repoName, category) {
+      var input = document.getElementById('repo-target-input');
+      if (input) {
+        input.value = 'https://github.com/' + repoName;
+        input.focus();
+      }
+    };
+
+    window.triggerScan = function() {
+      var btn = document.querySelector('#dossier-search-form button[type="submit"]');
+      if (!btn) return;
+      var originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Decompiling Telemetry...</span>';
+      btn.classList.add('opacity-80', 'pointer-events-none');
+      setTimeout(function() {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">done_all</span><span>Audit Synchronized</span>';
+        setTimeout(function() {
+          btn.innerHTML = originalHTML;
+          btn.classList.remove('opacity-80', 'pointer-events-none');
+        }, 1500);
+      }, 1200);
+    };
+  </script>
+</div></main></div></body></html>

@@ -1,0 +1,1 @@
+{"manifest_version":3,"name":"Skyglow Repository Investigator","version":"1.0.0","description":"Open GitHub repositories in your local Skyglow investigation workspace.","permissions":["activeTab","tabs"],"host_permissions":["https://github.com/*"],"action":{"default_popup":"popup.html"}}
