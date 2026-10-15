@@ -39,6 +39,75 @@ function workspaceEmpty(){
  liveWorkspace.innerHTML='<div class="sg-ws-hero"><span class="sg-label">REPOSITORY INTELLIGENCE / LIVE</span><h2>Investigate with evidence, not assumptions.</h2><p>Search a public GitHub repository to inspect its metadata, heuristic signals, and documented limitations.</p><form id="sg-ws-form" class="sg-ws-form"><input id="sg-ws-input" aria-label="GitHub repository" placeholder="owner/repo ΓÇö e.g. tailwindlabs/tailwindcss" required maxlength="300"><button type="submit">Run investigation ΓåÆ</button></form><p id="sg-ws-status" role="status">Ready to investigate ┬╖ No sample findings displayed</p></div><div class="sg-ws-empty"><strong>What Skyglow can verify today</strong><p>Repository metadata, recent activity samples, and limited heuristic signals. Stargazer coordination and code security are not yet verified.</p></div>';
  document.querySelector('#sg-ws-form').onsubmit=e=>{e.preventDefault();run($('#sg-ws-input').value)};
 }
+
+function renderStarHistory(r){
+ const history=r.aggregate_star_history;
+ const section=document.createElement('section');
+ section.className='sg-ws-star-history';
+ section.style.cssText='margin:24px 0;padding:22px;border:1px solid #b8c8d0;border-radius:12px';
+
+ const heading=document.createElement('h3');
+ heading.textContent='Star activity intelligence';
+ section.append(heading);
+
+ if(!history||history.status!=='available'){
+   const note=document.createElement('p');
+   note.textContent='Aggregate star history unavailable for this repository.';
+   section.append(note);
+   return section;
+ }
+
+ const note=document.createElement('p');
+ note.textContent='GitHub aggregate history. Activity spikes are not proof of manipulation.';
+ section.append(note);
+
+ const controls=document.createElement('div');
+ controls.style.cssText='display:flex;gap:10px;margin:12px 0';
+
+ const chart=document.createElement('div');
+ chart.style.cssText='display:flex;align-items:end;gap:3px;height:180px;overflow-x:auto;border-bottom:1px solid #999;padding:8px 0';
+
+ const summary=document.createElement('p');
+
+ function draw(period){
+   chart.replaceChildren();
+   const rows=(period==='daily'?history.daily:history.weekly).slice(-60);
+   const maximum=Math.max(1,...rows.map(x=>x.stars));
+
+   for(const row of rows){
+     const bar=document.createElement('div');
+     bar.style.cssText='flex:1 0 6px;min-width:6px;background:#31877d;border-radius:3px 3px 0 0';
+     bar.style.height=Math.max(2,160*row.stars/maximum)+'px';
+     bar.title=row.date+': '+row.stars+' stars';
+     bar.setAttribute('aria-label',bar.title);
+     chart.append(bar);
+   }
+
+   summary.textContent=rows.length+
+     ' '+period+' records displayed. Hover over bars for values.';
+ }
+
+ for(const period of ['weekly','daily']){
+   const button=document.createElement('button');
+   button.type='button';
+   button.textContent=period==='weekly'?'Weekly':'Daily';
+   button.onclick=()=>draw(period);
+   controls.append(button);
+ }
+
+ section.append(controls,chart,summary);
+
+ if(history.spikes?.length){
+   const spikes=document.createElement('p');
+   spikes.textContent=history.spikes.length+
+     ' unusually high weekly activity periods identified against preceding four-week averages.';
+   section.append(spikes);
+ }
+
+ draw('weekly');
+ return section;
+}
+
 function workspaceReport(r){
  const metric=(label,value)=>'<div class="sg-ws-metric"><span class="sg-label">'+label+'</span><strong>'+esc(Number(value??0).toLocaleString())+'</strong></div>';
  const risks=Object.entries(r.risks||{}).map(([k,v])=>'<div class="sg-ws-risk"><span class="sg-label">'+esc(k.replaceAll('_',' '))+'</span><strong>'+(v.score==null?'N/A':esc(v.score)+'/100')+'</strong><small>'+esc(v.status)+'</small></div>').join('');
@@ -46,6 +115,7 @@ function workspaceReport(r){
  const coverage=Object.entries(r.coverage||{}).map(([k,v])=>'<li><span>'+(v?'Γ£ô':'ΓÇö')+'</span> '+esc(k.replaceAll('_',' '))+'</li>').join('');
  liveWorkspace.innerHTML='<div class="sg-ws-hero"><span class="sg-label">LIVE REPOSITORY DOSSIER / REPORT #'+esc(r.id)+'</span><h2>'+esc(r.repo)+'</h2><p>'+esc(r.description||'No repository description provided')+'</p><p class="sg-ws-verdict">'+esc(r.verdict)+'</p><p class="sg-label">Retrieved '+esc(new Date(r.analyzed_at).toLocaleString())+' ┬╖ <a href="'+esc(r.url)+'" target="_blank" rel="noopener noreferrer">GitHub source Γåù</a></p><form id="sg-ws-form" class="sg-ws-form"><input id="sg-ws-input" aria-label="Analyze another repository" placeholder="Analyze another owner/repo" required maxlength="300"><button type="submit">Investigate ΓåÆ</button></form><p id="sg-ws-status" role="status"></p></div><div class="sg-ws-metrics">'+metric('STARS',r.metrics.stars)+metric('FORKS',r.metrics.forks)+metric('OPEN ISSUES',r.metrics.open_issues)+metric('DAYS SINCE PUSH',r.metrics.days_since_push==null?0:r.metrics.days_since_push)+'</div><h3>Risk diagnostics <small>Heuristic estimates, not probabilities</small></h3><div class="sg-ws-risks">'+risks+'</div><section class="sg-ws-security"><h3>Dependency security ┬╖ OSV</h3><p>On-demand npm dependency advisory lookup; not a full code scan.</p><button id="sg-security-run" type="button">Scan npm dependencies</button><div id="sg-security-output" role="status">Not scanned</div></section><h3>Traceable findings</h3><div class="sg-ws-findings">'+evidence+'</div><div class="sg-ws-bottom"><section><h3>Data coverage</h3><ul>'+coverage+'</ul></section><section><h3>Limitations</h3>'+(r.limitations||[]).map(x=>'<p>'+esc(x)+'</p>').join('')+'</section></div>';
  $('#sg-ws-form').onsubmit=e=>{e.preventDefault();run($('#sg-ws-input').value)};
+ liveWorkspace.querySelector('.sg-ws-security')?.before(renderStarHistory(r));
  const scan=$('#sg-security-run');if(scan)scan.onclick=async()=>{scan.disabled=true;const out=$('#sg-security-output');out.textContent='Checking pinned npm dependencies against OSVΓÇª';try{const data=await api('/api/security/'+encodeURIComponent(r.repo.split('/')[0])+'/'+encodeURIComponent(r.repo.split('/')[1]));out.replaceChildren();const total=Number.isFinite(data.total_packages)?data.total_packages:null;const scanned=Number(data.packages_scanned)||0;const coverage=total&&total>0?Math.round(scanned/total*100):null;const findings=Array.isArray(data.findings)?data.findings:[];const stats=document.createElement('div');stats.className='sg-osv-stats';const fields=[['Status',data.status||'unknown'],['Lockfile',data.lockfile||'Not identified'],['Detected',total===null?'Unknown':String(total)],['Queried',String(scanned)],['Coverage',coverage===null?'N/A':coverage+'%'],['Advisory matches',data.status==='completed'||data.status==='partial'?String(findings.length)+(data.findings_truncated?'+':''):'Not assessed']];for(const [label,value] of fields){const card=document.createElement('div');const small=document.createElement('span');small.textContent=label;const strong=document.createElement('strong');strong.textContent=value;card.append(small,strong);stats.append(card)}out.append(stats);if(coverage!==null){const meter=document.createElement('progress');meter.max=total;meter.value=scanned;meter.setAttribute('aria-label','Dependency query coverage');out.append(meter)}const summary=document.createElement('p');summary.textContent=data.reason||'No scan explanation available.';out.append(summary);if(data.status==='partial'){const warning=document.createElement('p');warning.className='sg-osv-warning';warning.textContent='Partial scan: '+(total===null?'Some':Math.max(0,total-scanned))+' detected package versions were not queried. Unqueried dependencies remain unassessed.';out.append(warning)}if(data.status==='unsupported'||data.status==='unavailable'){const warning=document.createElement('p');warning.className='sg-osv-warning';warning.textContent='No dependency security conclusion is available for this scan.';out.append(warning)}const grouped=new Map();for(const finding of findings){if(!finding||typeof finding.id!=='string')continue;let group=grouped.get(finding.id);if(!group){group={id:finding.id,url:finding.url,versions:new Set(),details:finding.details||null};grouped.set(finding.id,group)}if(!group.details&&finding.details)group.details=finding.details;group.versions.add(String(finding.package)+'@'+String(finding.version))}if(grouped.size){const heading=document.createElement('h4');heading.textContent='Advisory investigation ┬╖ '+grouped.size+' distinct IDs';out.append(heading);const note=document.createElement('p');note.textContent='Advisory matches from OSV, not verified exploitability. Affected package versions may be development-only or unreachable.';out.append(note);const filter=document.createElement('input');filter.type='search';filter.placeholder='Filter by advisory ID, package, CVE or severity';filter.setAttribute('aria-label','Filter OSV advisories');filter.style.cssText='width:100%;padding:10px;margin:8px 0;border:1px solid #b6b6b6;border-radius:6px';out.append(filter);const list=document.createElement('div');list.className='sg-osv-advisories';filter.addEventListener('input',()=>{const q=filter.value.trim().toLowerCase();for(const item of list.children)item.hidden=!item.dataset.search.includes(q)});for(const group of [...grouped.values()].sort((a,b)=>a.id.localeCompare(b.id))){const item=document.createElement('details');item.dataset.search=[group.id,...group.versions,group.details?.severity_label||'',...(group.details?.aliases||[])].join(' ').toLowerCase();const title=document.createElement('summary');title.textContent=group.id+' ┬╖ '+group.versions.size+' package/version '+(group.versions.size===1?'match':'matches');item.append(title);const versions=document.createElement('p');versions.textContent=[...group.versions].sort().join(', ');item.append(versions);if(group.details){if(group.details.summary){const desc=document.createElement('p');desc.textContent=group.details.summary;item.append(desc)}const info=document.createElement('p');info.textContent='OSV severity: '+(group.details.severity_label||'Not provided')+' ┬╖ CVE: '+(group.details.aliases?.join(', ')||'Not provided')+' ┬╖ Same-major fixed versions (if reported): '+(group.details.fixed_versions?.join(', ')||'Not provided');item.append(info);const scores=group.details.severity_scores||[];const sev=document.createElement('p');sev.textContent=scores.length?'Reported severity vectors: '+scores.map(x=>x.type+' '+x.score).join(' ┬╖ '):'Severity score not provided in OSV record';item.append(sev)}else{const unknown=document.createElement('p');unknown.textContent='Severity not retrieved; do not assume low risk.';item.append(unknown)}const link=document.createElement('a');link.textContent='Inspect OSV advisory Γåù';link.href='https://osv.dev/vulnerability/'+encodeURIComponent(group.id);link.target='_blank';link.rel='noopener noreferrer';item.append(link);list.append(item)}out.append(list)}if(data.status==='completed'&&!data.findings.length){const p=document.createElement('p');p.textContent='No OSV advisories returned for the queried versions. This does not prove the code is safe.';out.append(p)}}catch(e){out.textContent='Scan unavailable: '+e.message}finally{scan.disabled=false}};
 }
 

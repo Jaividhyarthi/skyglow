@@ -89,13 +89,90 @@ def summarize_star_sample(records, total_stars):
         'full_history': False
     }
 
+
+def summarize_star_history(records):
+    """Normalize GitHub aggregate history without inferring star authenticity."""
+    if not isinstance(records, list):
+        return {'status': 'unavailable', 'reason': 'Unexpected history response',
+                'daily': [], 'weekly': [], 'spikes': []}
+
+    from collections import defaultdict
+    daily_map = {}
+    weekly = []
+
+    for row in records:
+        if not isinstance(row, dict):
+            continue
+
+        week = row.get('week')
+        days = row.get('days')
+        total = row.get('total')
+
+        if (type(week) is not int or type(total) is not int
+                or total < 0 or not isinstance(days, list)
+                or len(days) != 7
+                or any(type(n) is not int or n < 0 for n in days)
+                or sum(days) != total):
+            continue
+
+        try:
+            start = datetime.datetime.fromtimestamp(
+                week, datetime.timezone.utc
+            )
+        except (ValueError, OverflowError, OSError):
+            continue
+
+        date = start.date().isoformat()
+        weekly.append({'date': date, 'stars': total})
+
+        for offset, count in enumerate(days):
+            day = (start + datetime.timedelta(days=offset)).date().isoformat()
+            daily_map[day] = count
+
+    weekly.sort(key=lambda row: row['date'])
+    daily = [
+        {'date': date, 'stars': count}
+        for date, count in sorted(daily_map.items())
+    ]
+
+    if not weekly:
+        return {'status': 'unavailable', 'reason': 'No valid weekly records',
+                'daily': [], 'weekly': [], 'spikes': []}
+
+    # Relative activity observations, not fraud predictions.
+    spikes = []
+    for index in range(4, len(weekly)):
+        baseline = [
+            row['stars'] for row in weekly[index - 4:index]
+        ]
+        average = sum(baseline) / len(baseline)
+        current = weekly[index]['stars']
+
+        if average >= 10 and current >= 2.5 * average:
+            spikes.append({
+                'date': weekly[index]['date'],
+                'stars': current,
+                'baseline': round(average, 1),
+                'ratio': round(current / average, 2)
+            })
+
+    return {
+        'status': 'available',
+        'source': 'GitHub aggregate stargazer history',
+        'scope': 'Returned historical weeks; completeness not guaranteed',
+        'daily': daily,
+        'weekly': weekly,
+        'spikes': spikes[-10:]
+    }
+
+
 async def investigate(value):
     name=parse_repo(value)
     headers={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'Skyglow-Evidence-First/1.0'}
     if os.getenv('GITHUB_TOKEN'): headers['Authorization']='Bearer '+os.environ['GITHUB_TOKEN']
     async with httpx.AsyncClient(headers=headers,timeout=18,follow_redirects=True) as client:
         repo=await github_json(client,'/repos/'+name)
-        commits=[]; releases=[]; contributors=[]; stargazers=[]
+        commits=[]; releases=[]; contributors=[]; stargazers=[]; raw_star_history=None
         errors=[]
         for label,path in [('commits',f'/repos/{name}/commits'),('releases',f'/repos/{name}/releases'),('contributors',f'/repos/{name}/contributors')]:
             try:
@@ -118,12 +195,35 @@ async def investigate(value):
                 errors.append('stargazers: unexpected API response')
         except Exception as exc:
             errors.append('stargazers: ' + str(exc)[:100])
+        try:
+            async with httpx.AsyncClient(
+                headers={
+                    'Accept': 'application/vnd.github+json',
+                    'User-Agent': 'Skyglow-Evidence-First/1.0'
+                },
+                timeout=18,
+                follow_redirects=True
+            ) as public_client:
+                history_res = await public_client.get(
+                    'https://api.github.com/repos/' +
+                    name + '/stargazers/history'
+                )
+                if history_res.status_code == 200:
+                    raw_star_history = history_res.json()
+                else:
+                    errors.append(
+                        'aggregate star history: HTTP ' +
+                        str(history_res.status_code)
+                    )
+        except Exception as exc:
+            errors.append('aggregate star history: ' + str(exc)[:100])
     age=days_ago(repo.get('created_at'))
     pushed=days_ago(repo.get('pushed_at'))
     stars=repo.get('stargazers_count',0)
     forks=repo.get('forks_count',0)
     issues=repo.get('open_issues_count',0)
     star_activity = summarize_star_sample(stargazers, stars)
+    aggregate_history = summarize_star_history(raw_star_history)
     evidence=[]
     def add(kind,title,description,source,weight=0):
         evidence.append({'id':f'e{len(evidence)+1}','kind':kind,'title':title,'description':description,'source':source,'weight':weight})
@@ -154,8 +254,9 @@ async def investigate(value):
     report={
         'repo':repo['full_name'],'url':repo['html_url'],'description':repo.get('description'),
         'analyzed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        'source':'GitHub REST API (live)', 'coverage':{'metadata':True,'commits':bool(commits),'releases':bool(releases),'contributors':bool(contributors),'individual_stargazers':bool(star_activity['sample_size']),'star_event_timeline':bool(star_activity['sample_size']),'full_code_scan':False},
+        'source':'GitHub REST API (live)', 'coverage':{'metadata':True,'commits':bool(commits),'releases':bool(releases),'contributors':bool(contributors),'individual_stargazers':bool(star_activity['sample_size']),'star_event_timeline':bool(star_activity['sample_size']),'aggregate_star_history':aggregate_history['status']=='available','full_code_scan':False},
         'star_activity':star_activity,
+        'aggregate_star_history':aggregate_history,
         'metrics':{'stars':stars,'forks':forks,'open_issues':issues,'age_days':age,'days_since_push':pushed,'contributors_sample':len(contributors),'recent_commits_sample':len(commits),'releases_sample':len(releases)},
         'risks':{'popularity':{'score':popularity if popularity else None,'status':'heuristic review signals; not a fake-star probability' if popularity else 'no triggered signals; authenticity unverified'},'promotion_network':{'score':None,'status':'insufficient data'},'code_security':{'score':None,'status':'not scanned'},'maintenance':{'score':maintenance if maintenance else None,'status':'metadata-based maintenance concerns' if maintenance else 'no triggered maintenance concerns'}},
         'verdict':'Review signals detected' if popularity>=20 else 'Insufficient evidence to verify star authenticity',
