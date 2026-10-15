@@ -1,3 +1,5 @@
+import asyncio
+import time
 import os
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -27,11 +29,46 @@ async def analyze(data:RepoInput):
     except ValueError as e:raise HTTPException(400,str(e))
     except httpx.HTTPStatusError as e:raise HTTPException(502,f'GitHub HTTP {e.response.status_code}')
     except (RuntimeError,httpx.RequestError) as e:raise HTTPException(503,str(e))
+# Per-process bounded cache and single-flight scans. Not shared across Render workers.
+SECURITY_CACHE_TTL = 300
+SECURITY_CACHE_LIMIT = 64
+_security_cache = {}
+_security_inflight = {}
+_security_guard = asyncio.Lock()
+
+async def cached_security_scan(name):
+    now = time.monotonic()
+    async with _security_guard:
+        cached = _security_cache.get(name)
+        if cached and cached[0] > now:
+            return cached[1]
+        task = _security_inflight.get(name)
+        if task is None:
+            task = asyncio.create_task(scan_npm_lockfile(name))
+            _security_inflight[name] = task
+    try:
+        result = await asyncio.shield(task)
+        if task.done() and not task.cancelled() and task.exception() is None:
+            async with _security_guard:
+                if _security_inflight.get(name) is task:
+                    _security_inflight.pop(name, None)
+                    if result.get('status') in ('completed', 'partial', 'unsupported'):
+                        _security_cache[name] = (time.monotonic() + SECURITY_CACHE_TTL, result)
+                        if len(_security_cache) > SECURITY_CACHE_LIMIT:
+                            oldest = next(iter(_security_cache))
+                            _security_cache.pop(oldest, None)
+        return result
+    finally:
+        if task.done():
+            async with _security_guard:
+                if _security_inflight.get(name) is task:
+                    _security_inflight.pop(name, None)
+
 @app.get('/api/security/{owner}/{repo}')
 async def security(owner:str,repo:str):
     try:
         name=parse_repo(owner+'/'+repo)
-        return await scan_npm_lockfile(name)
+        return await cached_security_scan(name)
     except ValueError as e:
         raise HTTPException(400,str(e))
     except httpx.RequestError:
