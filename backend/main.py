@@ -6,7 +6,7 @@ load_dotenv(Path(__file__).resolve().parents[1]/'.env')
 from fastapi import FastAPI,HTTPException
 from fastapi.responses import HTMLResponse,FileResponse,Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import httpx
 from .engine import investigate,history,get_report,explain,parse_repo,init_db
 ROOT=Path(__file__).resolve().parents[1]
@@ -15,9 +15,9 @@ async def lifespan(app):
     init_db();yield
 app=FastAPI(title='Skyglow Investigation API',version='1.0',lifespan=lifespan)
 app.mount('/assets',StaticFiles(directory=str(ROOT/'frontend')),name='assets')
-class RepoInput(BaseModel):url:str
-class AskInput(BaseModel):report_id:int;question:str
-class VoiceInput(BaseModel):text:str
+class RepoInput(BaseModel):url:str=Field(min_length=3,max_length=300)
+class AskInput(BaseModel):report_id:int=Field(gt=0);question:str=Field(min_length=1,max_length=1000)
+class VoiceInput(BaseModel):text:str=Field(min_length=1,max_length=2000)
 @app.get('/api/health')
 def health():return {'status':'ok','github_token_configured':bool(os.getenv('GITHUB_TOKEN')),'elevenlabs_configured':bool(os.getenv('ELEVENLABS_API_KEY'))}
 @app.post('/api/analyze')
@@ -44,8 +44,8 @@ async def voice(data:VoiceInput):
     if not key:raise HTTPException(503,'Set ELEVENLABS_API_KEY in .env to enable voice output')
     voice_id=os.getenv('ELEVENLABS_VOICE_ID','JBFqnCBsd6RMkjVDRZzb')
     async with httpx.AsyncClient(timeout=35) as c:
-        r=await c.post(f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}',headers={'xi-api-key':key,'Content-Type':'application/json'},json={'text':data.text[:2000],'model_id':'eleven_multilingual_v2'})
-    if r.status_code>=400:raise HTTPException(502,f'ElevenLabs returned {r.status_code}: {r.text[:180]}')
+        r=await c.post(f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}',headers={'xi-api-key':key,'Content-Type':'application/json'},json={'text':data.text,'model_id':'eleven_multilingual_v2'})
+    if r.status_code>=400:raise HTTPException(502,f'ElevenLabs returned HTTP {r.status_code}')
     return Response(content=r.content,media_type='audio/mpeg')
 PAGES={'':'investigation_home','home':'investigation_home','workspace':'investigation_workspace','network':'network_explorer','voice':'voice_investigator','reputation':'reputation_profile','research':'research_lab','extension-preview':'extension_preview'}
 @app.get('/{page:path}',response_class=HTMLResponse)
