@@ -17,7 +17,7 @@ def extract_pnpm_versions(packages):
             continue
         spec = key.lstrip("/").split("(", 1)[0]
         name, sep, version = spec.rpartition("@")
-        if sep and name and re.fullmatch(r"[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
+        if sep and name and re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
             unique.add((name, version))
     return unique
 
