@@ -20,7 +20,7 @@ def parse_repo(value):
                 or u.query or u.fragment):
             raise ValueError('Only canonical HTTPS github.com repository URLs are supported')
         parts = u.path.strip('/').split('/')
-        if len(parts) < 2 or any(not part for part in parts[:2]):
+        if len(parts) < 2 or any(not part for part in parts):
             raise ValueError('Enter a GitHub repository URL or owner/repo')
         value = '/'.join(parts[:2])
     value = value.removesuffix('.git')
