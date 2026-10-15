@@ -43,7 +43,7 @@ async def scan_npm_lockfile(repo_name: str):
                     continue
                 spec = key.lstrip("/").split("(", 1)[0]
                 name, sep, version = spec.rpartition("@")
-                if sep and name and re.fullmatch(r"[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
+                if sep and name and re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
                     unique[(name, version)] = None
         else:
             for path, meta in packages.items():
