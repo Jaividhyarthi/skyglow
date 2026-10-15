@@ -17,7 +17,7 @@ def applicable_fixed_versions(advisory, package_name, installed_version):
     This is conservative: a fix is not shown as a recommendation when the
     installed version or fixed version cannot be parsed as simple semver.
     """
-    match = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)(?:[-+][A-Za-z0-9.+-]+)?", installed_version)
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:[-+][A-Za-z0-9.+-]+)?", installed_version)
     if not match:
         return []
     installed_major = int(match.group(1))
@@ -37,7 +37,7 @@ def applicable_fixed_versions(advisory, package_name, installed_version):
                 fixed = event.get("fixed")
                 if not isinstance(fixed, str):
                     continue
-                fixed_match = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)", fixed)
+                fixed_match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", fixed)
                 if fixed_match and int(fixed_match.group(1)) == installed_major:
                     if tuple(map(int, fixed_match.groups())) > tuple(map(int, match.groups()[:3])):
                         fixes.add(fixed)
