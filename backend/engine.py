@@ -1,4 +1,4 @@
-"""Evidence-first analysis: heuristics are not fake-star or malware verdicts."""
+﻿"""Evidence-first analysis: heuristics are not fake-star or malware verdicts."""
 import os,re,json,sqlite3,datetime,math
 from urllib.parse import urlparse
 from pathlib import Path
@@ -66,13 +66,36 @@ def days_ago(iso):
     if not iso:return None
     return max(0,(datetime.datetime.now(datetime.timezone.utc)-datetime.datetime.fromisoformat(iso.replace('Z','+00:00'))).days)
 
+
+def summarize_star_sample(records, total_stars):
+    from collections import Counter
+    timestamps = [
+        item.get('starred_at') for item in records
+        if isinstance(item, dict) and item.get('starred_at')
+    ]
+    days = Counter(t[:10] for t in timestamps)
+    daily = [
+        {'date': day, 'stars': count}
+        for day, count in sorted(days.items())
+    ]
+    peak = max(daily, key=lambda row: row['stars']) if daily else None
+    return {
+        'sample_size': len(timestamps),
+        'total_stars': total_stars,
+        'coverage_percent': round(100 * len(timestamps) / total_stars, 2) if total_stars else 0,
+        'sample_scope': 'GitHub API first page, not complete repository history',
+        'daily_counts': daily,
+        'peak_sample_day': peak,
+        'full_history': False
+    }
+
 async def investigate(value):
     name=parse_repo(value)
     headers={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'Skyglow-Evidence-First/1.0'}
     if os.getenv('GITHUB_TOKEN'): headers['Authorization']='Bearer '+os.environ['GITHUB_TOKEN']
     async with httpx.AsyncClient(headers=headers,timeout=18,follow_redirects=True) as client:
         repo=await github_json(client,'/repos/'+name)
-        commits=[]; releases=[]; contributors=[]
+        commits=[]; releases=[]; contributors=[]; stargazers=[]
         errors=[]
         for label,path in [('commits',f'/repos/{name}/commits'),('releases',f'/repos/{name}/releases'),('contributors',f'/repos/{name}/contributors')]:
             try:
@@ -81,11 +104,26 @@ async def investigate(value):
                 elif label=='releases':releases=val if isinstance(val,list) else []
                 else:contributors=val if isinstance(val,list) else []
             except Exception as e: errors.append(f'{label}: {str(e)[:100]}')
+        try:
+            star_res = await client.get(
+                'https://api.github.com/repos/' + name + '/stargazers',
+                params={'per_page': 100},
+                headers={'Accept': 'application/vnd.github.star+json'}
+            )
+            star_res.raise_for_status()
+            star_data = star_res.json()
+            if isinstance(star_data, list):
+                stargazers = star_data
+            else:
+                errors.append('stargazers: unexpected API response')
+        except Exception as exc:
+            errors.append('stargazers: ' + str(exc)[:100])
     age=days_ago(repo.get('created_at'))
     pushed=days_ago(repo.get('pushed_at'))
     stars=repo.get('stargazers_count',0)
     forks=repo.get('forks_count',0)
     issues=repo.get('open_issues_count',0)
+    star_activity = summarize_star_sample(stargazers, stars)
     evidence=[]
     def add(kind,title,description,source,weight=0):
         evidence.append({'id':f'e{len(evidence)+1}','kind':kind,'title':title,'description':description,'source':source,'weight':weight})
@@ -103,14 +141,25 @@ async def investigate(value):
     popularity=min(100,sum(e['weight'] for e in evidence))
     maintenance=min(100,(45 if pushed is not None and pushed>365 else 0)+(35 if repo.get('archived') else 0)+(20 if not releases and age and age>180 else 0))
     graph={'status':'unavailable','reason':'No authorized account-level stargazer graph was retrieved. Account coordination cannot be assessed.','nodes':[],'edges':[]}
+    if star_activity['sample_size']:
+        peak = star_activity['peak_sample_day']
+        if peak and peak['stars'] >= 20:
+            add(
+                'context',
+                'Concentrated star activity in sampled records',
+                f"{peak['stars']} of {star_activity['sample_size']} sampled star events occurred on {peak['date']}. This is a partial sample, not proof of manipulation.",
+                repo['html_url'] + '/stargazers',
+                0
+            )
     report={
         'repo':repo['full_name'],'url':repo['html_url'],'description':repo.get('description'),
         'analyzed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        'source':'GitHub REST API (live)', 'coverage':{'metadata':True,'commits':bool(commits),'releases':bool(releases),'contributors':bool(contributors),'individual_stargazers':False,'star_event_timeline':False,'full_code_scan':False},
+        'source':'GitHub REST API (live)', 'coverage':{'metadata':True,'commits':bool(commits),'releases':bool(releases),'contributors':bool(contributors),'individual_stargazers':bool(star_activity['sample_size']),'star_event_timeline':bool(star_activity['sample_size']),'full_code_scan':False},
+        'star_activity':star_activity,
         'metrics':{'stars':stars,'forks':forks,'open_issues':issues,'age_days':age,'days_since_push':pushed,'contributors_sample':len(contributors),'recent_commits_sample':len(commits),'releases_sample':len(releases)},
-        'risks':{'popularity':{'score':popularity,'status':'limited heuristic estimate'},'promotion_network':{'score':None,'status':'insufficient data'},'code_security':{'score':None,'status':'not scanned'},'maintenance':{'score':maintenance,'status':'metadata heuristic estimate'}},
+        'risks':{'popularity':{'score':popularity if popularity else None,'status':'heuristic review signals; not a fake-star probability' if popularity else 'no triggered signals; authenticity unverified'},'promotion_network':{'score':None,'status':'insufficient data'},'code_security':{'score':None,'status':'not scanned'},'maintenance':{'score':maintenance if maintenance else None,'status':'metadata-based maintenance concerns' if maintenance else 'no triggered maintenance concerns'}},
         'verdict':'Review signals detected' if popularity>=20 else 'Insufficient evidence to verify star authenticity',
-        'evidence':evidence,'graph':graph,'limitations':['No individual stargazer identities or event-level star timestamps were collected.','Popularity anomalies are not evidence of malware or wrongdoing.','Code was not scanned; security is unverified.','Scores are heuristics, not validated fake-star probabilities.']+errors,
+        'evidence':evidence,'graph':graph,'limitations':['Stargazer timestamps, when available, are sampled from the first API page only; the complete history and coordinated behavior remain unverified.','Popularity anomalies are not evidence of malware or wrongdoing.','Code was not scanned; security is unverified.','Scores are heuristics, not validated fake-star probabilities.']+errors,
         'recent_commits':[{'sha':x.get('sha','')[:9],'message':(x.get('commit') or {}).get('message','').splitlines()[0][:120]} for x in commits[:8]],
         'contributors':[{'login':x.get('login'),'contributions':x.get('contributions')} for x in contributors[:12]],
         'is_demo':False
