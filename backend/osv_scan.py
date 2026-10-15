@@ -6,7 +6,8 @@ import json
 import re
 import yaml
 
-MAX_PACKAGES = 100
+MAX_PACKAGES = 600
+BATCH_SIZE = 100
 MAX_LOCKFILE_BYTES = 1_500_000
 
 def extract_pnpm_versions(packages):
@@ -66,19 +67,40 @@ async def scan_npm_lockfile(repo_name: str):
         entries = entries[:MAX_PACKAGES]
         if not entries:
             return {"status": "unsupported", "reason": "No versioned npm dependencies found.", "packages_scanned": 0, "findings": []}
-        payload = {"queries": [{"package": {"ecosystem": "npm", "name": name}, "version": version} for name, version in entries]}
-        try:
-            osv = await client.post("https://api.osv.dev/v1/querybatch", json=payload, timeout=35)
-            osv.raise_for_status()
-            results = osv.json()["results"]
-            if len(results) != len(entries):
-                raise ValueError("OSV returned incomplete batch")
-        except (httpx.HTTPError, ValueError, KeyError, TypeError):
-            return {"status": "unavailable", "reason": "OSV lookup failed; no security conclusion can be drawn.", "packages_scanned": 0, "findings": []}
+        results = []
+        scanned_entries = []
+        batch_failed = False
+        for offset in range(0, len(entries), BATCH_SIZE):
+            batch = entries[offset:offset + BATCH_SIZE]
+            payload = {"queries": [{"package": {"ecosystem": "npm", "name": name}, "version": version} for name, version in batch]}
+            try:
+                osv = await client.post("https://api.osv.dev/v1/querybatch", json=payload, timeout=35)
+                osv.raise_for_status()
+                batch_results = osv.json()["results"]
+                if not isinstance(batch_results, list) or len(batch_results) != len(batch):
+                    raise ValueError("OSV returned incomplete batch")
+            except (httpx.HTTPError, ValueError, KeyError, TypeError):
+                batch_failed = True
+                break
+            scanned_entries.extend(batch)
+            results.extend(batch_results)
+        if not scanned_entries:
+            return {"status": "unavailable", "reason": "OSV lookup failed before any dependency was assessed.", "packages_scanned": 0, "total_packages": len(unique), "lockfile": lockfile, "findings": []}
     findings = []
-    for (name, version), result in zip(entries, results):
+    for (name, version), result in zip(scanned_entries, results):
         for vuln in result.get("vulns", []):
             vid = vuln.get("id")
             if isinstance(vid, str) and vid:
                 findings.append({"package": name, "version": version, "id": vid, "url": "https://osv.dev/vulnerability/" + vid})
-    return {"status": "partial" if truncated else "completed", "reason": ("Only the first 100 sorted unique npm package/version pairs were scanned." if truncated else "Root "+lockfile+" dependency versions queried against OSV; not a full code or transitive reachability audit."), "packages_scanned": len(entries), "total_packages": len(unique), "findings": findings[:250], "findings_truncated": len(findings) > 250, "source": "OSV.dev querybatch", "lockfile": lockfile}
+    partial = truncated or batch_failed
+    scanned_count = len(scanned_entries)
+    remaining = len(unique) - scanned_count
+    reason = (f"{scanned_count} of {len(unique)} unique dependency versions queried against OSV; "
+              + (f"{remaining} unqueried due to a batch failure." if batch_failed else
+                 f"{remaining} unqueried due to the {MAX_PACKAGES}-package limit." if truncated else
+                 "All detected versions queried; not a full code or reachability audit."))
+    return {"status": "partial" if partial else "completed",
+            "reason": reason, "packages_scanned": scanned_count,
+            "total_packages": len(unique), "findings": findings[:250],
+            "findings_truncated": len(findings) > 250,
+            "source": "OSV.dev querybatch", "lockfile": lockfile}
