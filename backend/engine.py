@@ -9,14 +9,25 @@ DB=Path(os.getenv('SKYGLOW_DB',str(ROOT/'skyglow.db')))
 REPO=re.compile(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
 
 def parse_repo(value):
-    value=value.strip().rstrip('/')
-    if value.startswith('https://github.com/'):
-        u=urlparse(value)
-        if u.hostname!='github.com': raise ValueError('Only github.com repository URLs are supported')
-        parts=u.path.strip('/').split('/')
-        value='/'.join(parts[:2]) if len(parts)>=2 else ''
-    if not REPO.fullmatch(value): raise ValueError('Enter a GitHub repository URL or owner/repo')
-    return value.removesuffix('.git')
+    """Accept only canonical public GitHub repository identifiers and URLs."""
+    if not isinstance(value, str):
+        raise ValueError('Enter a GitHub repository URL or owner/repo')
+    value = value.strip()
+    if value.startswith(('https://', 'http://')):
+        u = urlparse(value)
+        if (u.scheme != 'https' or u.hostname != 'github.com'
+                or u.username or u.password or u.port
+                or u.query or u.fragment):
+            raise ValueError('Only canonical HTTPS github.com repository URLs are supported')
+        parts = u.path.strip('/').split('/')
+        if len(parts) < 2 or any(not part for part in parts[:2]):
+            raise ValueError('Enter a GitHub repository URL or owner/repo')
+        value = '/'.join(parts[:2])
+    value = value.removesuffix('.git')
+    if not REPO.fullmatch(value) or any(p in ('.', '..') for p in value.split('/')):
+        raise ValueError('Enter a GitHub repository URL or owner/repo')
+    return value
+
 
 def init_db():
     DB.parent.mkdir(parents=True,exist_ok=True)
