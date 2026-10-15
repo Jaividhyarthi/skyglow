@@ -31,8 +31,8 @@ async def scan_npm_lockfile(repo_name: str):
             if len(raw) > MAX_LOCKFILE_BYTES:
                 raise ValueError("oversized lockfile")
             lock = yaml.safe_load(raw) if lockfile == "pnpm-lock.yaml" else json.loads(raw)
-        except (ValueError, KeyError, TypeError):
-            return {"status": "unsupported", "reason": "Could not parse npm lockfile.", "packages_scanned": 0, "findings": []}
+        except (ValueError, KeyError, TypeError, yaml.YAMLError):
+            return {"status": "unsupported", "reason": "Could not parse dependency lockfile.", "packages_scanned": 0, "findings": []}
         packages = lock.get("packages") if isinstance(lock, dict) else None
         if not isinstance(packages, dict):
             return {"status": "unsupported", "reason": "Unsupported lockfile package format.", "packages_scanned": 0, "findings": []}
