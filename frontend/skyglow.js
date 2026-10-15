@@ -5,6 +5,17 @@ let report=null,loading=false;
 const liveWorkspace=document.createElement('section');liveWorkspace.id='sg-workspace';liveWorkspace.setAttribute('aria-label','Verified repository investigation');
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Hide unverified Stitch forensic claims until corresponding real-data modules exist.
+// Keep the navigation, live evidence panel, and real API-backed workspace accessible.
+const style=document.createElement('style');
+style.textContent='body.sg-no-demo main,body.sg-no-demo [role="main"]{visibility:hidden}body.sg-no-demo #sg-workspace,body.sg-no-demo #sg-panel,body.sg-no-demo #sg-open,body.sg-no-demo #sg-live-banner{visibility:visible}';
+document.head.append(style);
+document.body.classList.add('sg-no-demo');
+const notice=document.createElement('section');
+notice.id='sg-data-notice';
+notice.setAttribute('role','status');
+notice.textContent='Verified analysis only: legacy sample dossiers and synthetic forensic claims are hidden. Use Live Evidence to investigate a public GitHub repository.';
+document.body.append(notice);
 const banner=document.createElement('div');banner.id='sg-live-banner';banner.innerHTML='<strong>Skyglow live analysis</strong> · Stitch artwork contains illustrative sample values. Only results in the Live Evidence panel are fetched and verified.';document.body.append(banner);
 const open=document.createElement('button');open.id='sg-open';open.textContent='◉ Live Evidence / Ask Skyglow';document.body.append(open);
 const panel=document.createElement('aside');panel.id='sg-panel';panel.setAttribute('aria-label','Live investigation panel');document.body.append(panel);
