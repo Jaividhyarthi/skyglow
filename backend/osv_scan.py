@@ -8,7 +8,7 @@ import yaml
 
 MAX_PACKAGES = 600
 BATCH_SIZE = 100
-MAX_ADVISORY_DETAILS = 25
+MAX_ADVISORY_DETAILS = 10
 MAX_LOCKFILE_BYTES = 1_500_000
 
 def extract_pnpm_versions(packages):
