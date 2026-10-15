@@ -38,3 +38,5 @@ main #sg-workspace{max-width:1180px;min-height:0;padding:0;border:0;background:t
 .sg-ws-bottom li{list-style:none}.sg-ws-bottom ul{padding:0!important}
 @media(max-width:950px){.sg-ws-metrics,.sg-ws-risks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.sg-ws-form{flex-direction:column}.sg-ws-metrics,.sg-ws-risks,.sg-ws-findings,.sg-ws-bottom{grid-template-columns:1fr}.sg-ws-hero{padding:20px}.sg-ws-hero h2{font-size:30px}}
+
+.sg-brand-mark{display:inline-grid;place-items:center;flex-shrink:0;width:56px;height:56px;border:2px solid var(--sg-green);border-radius:10px;background:var(--sg-cream);color:var(--sg-green);font:700 34px Newsreader,Georgia,serif}
