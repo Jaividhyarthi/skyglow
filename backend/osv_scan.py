@@ -108,7 +108,10 @@ async def scan_npm_lockfile(repo_name: str):
                 severity = advisory.get("severity")
                 scores = [x for x in severity if isinstance(x, dict) and isinstance(x.get("score"), str)] if isinstance(severity, list) else []
                 details[vid] = {"summary": str(advisory.get("summary") or "")[:350],
-                                "severity_scores": [{"type": str(x.get("type") or "")[:40], "score": x["score"][:180]} for x in scores[:3]]}
+                                "severity_scores": [{"type": str(x.get("type") or "")[:40], "score": x["score"][:180]} for x in scores[:3]],
+                                "severity_label": (advisory.get("database_specific") or {}).get("severity") if isinstance(advisory.get("database_specific"), dict) and (advisory.get("database_specific") or {}).get("severity") in ("LOW", "MODERATE", "MEDIUM", "HIGH", "CRITICAL") else None,
+                                "aliases": [v for v in advisory.get("aliases", []) if isinstance(v, str) and v.startswith("CVE-")][:5] if isinstance(advisory.get("aliases"), list) else [],
+                                "fixed_versions": sorted({event["fixed"] for affected in advisory.get("affected", []) if isinstance(affected, dict) and (affected.get("package") or {}).get("ecosystem") == "npm" for rng in affected.get("ranges", []) if isinstance(rng, dict) for event in rng.get("events", []) if isinstance(event, dict) and isinstance(event.get("fixed"), str)})[:10] if isinstance(advisory.get("affected"), list) else []}
             except (httpx.HTTPError, ValueError, TypeError):
                 continue
     for item in findings:
