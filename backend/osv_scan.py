@@ -11,6 +11,39 @@ BATCH_SIZE = 100
 MAX_ADVISORY_DETAILS = 10
 MAX_LOCKFILE_BYTES = 1_500_000
 
+def applicable_fixed_versions(advisory, package_name, installed_version):
+    """Return fix events in the same major line, for the exact npm package.
+
+    This is conservative: a fix is not shown as a recommendation when the
+    installed version or fixed version cannot be parsed as simple semver.
+    """
+    match = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)(?:[-+][A-Za-z0-9.+-]+)?", installed_version)
+    if not match:
+        return []
+    installed_major = int(match.group(1))
+    fixes = set()
+    for affected in advisory.get("affected", []):
+        if not isinstance(affected, dict):
+            continue
+        package = affected.get("package")
+        if not isinstance(package, dict) or package.get("ecosystem") != "npm" or package.get("name") != package_name:
+            continue
+        for rng in affected.get("ranges", []):
+            if not isinstance(rng, dict):
+                continue
+            for event in rng.get("events", []):
+                if not isinstance(event, dict):
+                    continue
+                fixed = event.get("fixed")
+                if not isinstance(fixed, str):
+                    continue
+                fixed_match = re.fullmatch(r"(\\d+)\\.(\\d+)\\.(\\d+)", fixed)
+                if fixed_match and int(fixed_match.group(1)) == installed_major:
+                    if tuple(map(int, fixed_match.groups())) > tuple(map(int, match.groups()[:3])):
+                        fixes.add(fixed)
+    return sorted(fixes, key=lambda v: tuple(map(int, v.split("."))))
+
+
 def extract_pnpm_versions(packages):
     """Extract exact npm versions from pnpm package snapshot keys."""
     unique = set()
@@ -111,11 +144,11 @@ async def scan_npm_lockfile(repo_name: str):
                                 "severity_scores": [{"type": str(x.get("type") or "")[:40], "score": x["score"][:180]} for x in scores[:3]],
                                 "severity_label": (advisory.get("database_specific") or {}).get("severity") if isinstance(advisory.get("database_specific"), dict) and (advisory.get("database_specific") or {}).get("severity") in ("LOW", "MODERATE", "MEDIUM", "HIGH", "CRITICAL") else None,
                                 "aliases": [v for v in advisory.get("aliases", []) if isinstance(v, str) and v.startswith("CVE-")][:5] if isinstance(advisory.get("aliases"), list) else [],
-                                "fixed_versions": sorted({event["fixed"] for affected in advisory.get("affected", []) if isinstance(affected, dict) and (affected.get("package") or {}).get("ecosystem") == "npm" for rng in affected.get("ranges", []) if isinstance(rng, dict) for event in rng.get("events", []) if isinstance(event, dict) and isinstance(event.get("fixed"), str)})[:10] if isinstance(advisory.get("affected"), list) else []}
+                                "affected": advisory.get("affected", []) if isinstance(advisory.get("affected"), list) else []}
             except (httpx.HTTPError, ValueError, TypeError):
                 continue
     for item in findings:
-        item["details"] = details.get(item["id"])
+        item["details"] = {**{k: v for k, v in details[item["id"]].items() if k != "affected"}, "fixed_versions": applicable_fixed_versions(details[item["id"]], item["package"], item["version"])} if item["id"] in details else None
     partial = truncated or batch_failed
     scanned_count = len(scanned_entries)
     remaining = len(unique) - scanned_count
