@@ -2,6 +2,9 @@
 import base64
 import os
 import httpx
+import json
+import re
+import yaml
 
 MAX_PACKAGES = 100
 MAX_LOCKFILE_BYTES = 1_500_000
@@ -12,33 +15,45 @@ async def scan_npm_lockfile(repo_name: str):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
     async with httpx.AsyncClient(timeout=25, follow_redirects=False) as client:
         res = await client.get(f"https://api.github.com/repos/{repo_name}/contents/package-lock.json", headers=headers)
+        lockfile = "package-lock.json"
         if res.status_code == 404:
-            return {"status": "unsupported", "reason": "No root package-lock.json found. No dependency scan performed.", "packages_scanned": 0, "findings": []}
+            res = await client.get(f"https://api.github.com/repos/{repo_name}/contents/pnpm-lock.yaml", headers=headers)
+            lockfile = "pnpm-lock.yaml"
+        if res.status_code == 404:
+            return {"status": "unsupported", "reason": "No root package-lock.json or pnpm-lock.yaml found. No dependency scan performed.", "packages_scanned": 0, "findings": []}
         if res.status_code != 200:
             return {"status": "unavailable", "reason": f"GitHub lockfile retrieval failed (HTTP {res.status_code}).", "packages_scanned": 0, "findings": []}
         data = res.json()
         if data.get("encoding") != "base64" or data.get("size", 0) > MAX_LOCKFILE_BYTES:
             return {"status": "unsupported", "reason": "Lockfile exceeds scan size limit or is not available inline.", "packages_scanned": 0, "findings": []}
-        import json
         try:
             raw = base64.b64decode(data["content"], validate=False)
             if len(raw) > MAX_LOCKFILE_BYTES:
                 raise ValueError("oversized lockfile")
-            lock = json.loads(raw)
+            lock = yaml.safe_load(raw) if lockfile == "pnpm-lock.yaml" else json.loads(raw)
         except (ValueError, KeyError, TypeError):
             return {"status": "unsupported", "reason": "Could not parse npm lockfile.", "packages_scanned": 0, "findings": []}
-        packages = lock.get("packages")
+        packages = lock.get("packages") if isinstance(lock, dict) else None
         if not isinstance(packages, dict):
-            return {"status": "unsupported", "reason": "Only npm lockfile v2/v3 package entries are supported.", "packages_scanned": 0, "findings": []}
+            return {"status": "unsupported", "reason": "Unsupported lockfile package format.", "packages_scanned": 0, "findings": []}
         unique = {}
-        for path, meta in packages.items():
-            if not path or not isinstance(meta, dict) or "node_modules/" not in path:
-                continue
-            name = path.rsplit("node_modules/", 1)[-1]
-            version = meta.get("version")
-            if not isinstance(version, str) or not name or not version or meta.get("link"):
-                continue
-            unique[(name, version)] = None
+        if lockfile == "pnpm-lock.yaml":
+            for key in packages:
+                if not isinstance(key, str):
+                    continue
+                spec = key.lstrip("/").split("(", 1)[0]
+                name, sep, version = spec.rpartition("@")
+                if sep and name and re.fullmatch(r"[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
+                    unique[(name, version)] = None
+        else:
+            for path, meta in packages.items():
+                if not path or not isinstance(meta, dict) or "node_modules/" not in path:
+                    continue
+                name = path.rsplit("node_modules/", 1)[-1]
+                version = meta.get("version")
+                if not isinstance(version, str) or not name or not version or meta.get("link"):
+                    continue
+                unique[(name, version)] = None
         entries = sorted(unique)
         truncated = len(entries) > MAX_PACKAGES
         entries = entries[:MAX_PACKAGES]
@@ -59,4 +74,4 @@ async def scan_npm_lockfile(repo_name: str):
             vid = vuln.get("id")
             if isinstance(vid, str) and vid:
                 findings.append({"package": name, "version": version, "id": vid, "url": "https://osv.dev/vulnerability/" + vid})
-    return {"status": "partial" if truncated else "completed", "reason": ("Only the first 100 sorted unique npm package/version pairs were scanned." if truncated else "Root npm package-lock.json dependency versions queried against OSV; not a full code or transitive reachability audit."), "packages_scanned": len(entries), "total_packages": len(unique), "findings": findings[:250], "findings_truncated": len(findings) > 250, "source": "OSV.dev querybatch"}
+    return {"status": "partial" if truncated else "completed", "reason": ("Only the first 100 sorted unique npm package/version pairs were scanned." if truncated else "Root "+lockfile+" dependency versions queried against OSV; not a full code or transitive reachability audit."), "packages_scanned": len(entries), "total_packages": len(unique), "findings": findings[:250], "findings_truncated": len(findings) > 250, "source": "OSV.dev querybatch", "lockfile": lockfile}
