@@ -148,7 +148,7 @@ async def scan_npm_lockfile(repo_name: str):
             except (httpx.HTTPError, ValueError, TypeError):
                 continue
     for item in findings:
-        item["details"] = dict(details[item["id"]], fixed_versions=applicable_fixed_versions(details[item["id"]], item["package"], item["version"])) if item["id"] in details else None
+        item["details"] = {**{k: v for k, v in details[item["id"]].items() if k != "affected"}, "fixed_versions": applicable_fixed_versions(details[item["id"]], item["package"], item["version"])} if item["id"] in details else None
     partial = truncated or batch_failed
     scanned_count = len(scanned_entries)
     remaining = len(unique) - scanned_count
