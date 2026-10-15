@@ -8,6 +8,7 @@ import yaml
 
 MAX_PACKAGES = 600
 BATCH_SIZE = 100
+MAX_ADVISORY_DETAILS = 25
 MAX_LOCKFILE_BYTES = 1_500_000
 
 def extract_pnpm_versions(packages):
@@ -92,6 +93,26 @@ async def scan_npm_lockfile(repo_name: str):
             vid = vuln.get("id")
             if isinstance(vid, str) and vid:
                 findings.append({"package": name, "version": version, "id": vid, "url": "https://osv.dev/vulnerability/" + vid})
+    # OSV querybatch returns advisory IDs, not full severity records.
+    # Enrich a bounded subset; missing data must never be interpreted as low risk.
+    detail_ids = sorted({item["id"] for item in findings})[:MAX_ADVISORY_DETAILS]
+    details = {}
+    async with httpx.AsyncClient(timeout=12) as detail_client:
+        for vid in detail_ids:
+            try:
+                response = await detail_client.get("https://api.osv.dev/v1/vulns/" + vid)
+                response.raise_for_status()
+                advisory = response.json()
+                if not isinstance(advisory, dict):
+                    continue
+                severity = advisory.get("severity")
+                scores = [x for x in severity if isinstance(x, dict) and isinstance(x.get("score"), str)] if isinstance(severity, list) else []
+                details[vid] = {"summary": str(advisory.get("summary") or "")[:350],
+                                "severity_scores": [{"type": str(x.get("type") or "")[:40], "score": x["score"][:180]} for x in scores[:3]]}
+            except (httpx.HTTPError, ValueError, TypeError):
+                continue
+    for item in findings:
+        item["details"] = details.get(item["id"])
     partial = truncated or batch_failed
     scanned_count = len(scanned_entries)
     remaining = len(unique) - scanned_count
@@ -103,4 +124,4 @@ async def scan_npm_lockfile(repo_name: str):
             "reason": reason, "packages_scanned": scanned_count,
             "total_packages": len(unique), "findings": findings[:250],
             "findings_truncated": len(findings) > 250,
-            "source": "OSV.dev querybatch", "lockfile": lockfile}
+            "source": "OSV.dev querybatch", "lockfile": lockfile, "advisories_enriched": len(details), "advisory_detail_limit": MAX_ADVISORY_DETAILS}
