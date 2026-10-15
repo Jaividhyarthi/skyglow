@@ -26,3 +26,19 @@ def test_pnpm_v8_legacy_and_invalid():
         ("lodash", "4.17.21"),
         ("@scope/pkg", "1.0.0-beta.1"),
     }
+
+
+def test_tailwind_pnpm_v9_package_keys():
+    # Representative package keys from Tailwind CSS pnpm lockfile v9.
+    packages = {
+        "@alloc/quick-lru@5.2.0": {"resolution": {"integrity": "sha512-test"}},
+        "@emnapi/core@1.11.3": {"resolution": {"integrity": "sha512-test"}},
+        "react@19.2.7": {"resolution": {"integrity": "sha512-test"}},
+        "vite@8.2.0(@types/node@25.9.1)": {},
+    }
+    assert extract_pnpm_versions(packages) == {
+        ("@alloc/quick-lru", "5.2.0"),
+        ("@emnapi/core", "1.11.3"),
+        ("react", "19.2.7"),
+        ("vite", "8.2.0"),
+    }
