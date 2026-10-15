@@ -9,6 +9,19 @@ import yaml
 MAX_PACKAGES = 100
 MAX_LOCKFILE_BYTES = 1_500_000
 
+def extract_pnpm_versions(packages):
+    """Extract exact npm versions from pnpm package snapshot keys."""
+    unique = set()
+    for key in packages:
+        if not isinstance(key, str):
+            continue
+        spec = key.lstrip("/").split("(", 1)[0]
+        name, sep, version = spec.rpartition("@")
+        if sep and name and re.fullmatch(r"[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
+            unique.add((name, version))
+    return unique
+
+
 async def scan_npm_lockfile(repo_name: str):
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "Skyglow-Supply-Chain/1.0"}
     if os.getenv("GITHUB_TOKEN"):
@@ -38,13 +51,7 @@ async def scan_npm_lockfile(repo_name: str):
             return {"status": "unsupported", "reason": "Unsupported lockfile package format.", "packages_scanned": 0, "findings": []}
         unique = {}
         if lockfile == "pnpm-lock.yaml":
-            for key in packages:
-                if not isinstance(key, str):
-                    continue
-                spec = key.lstrip("/").split("(", 1)[0]
-                name, sep, version = spec.rpartition("@")
-                if sep and name and re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.+-]+)?", version):
-                    unique[(name, version)] = None
+            unique = {entry: None for entry in extract_pnpm_versions(packages)}
         else:
             for path, meta in packages.items():
                 if not path or not isinstance(meta, dict) or "node_modules/" not in path:
