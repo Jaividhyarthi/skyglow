@@ -57,6 +57,8 @@ async def github_json(client,path,params=None):
     res=await client.get('https://api.github.com'+path,params=params)
     if res.status_code==404: raise ValueError('Repository not found or not publicly accessible')
     if res.status_code in (403,429): raise RuntimeError('GitHub rate limit or access restriction; add GITHUB_TOKEN or try later')
+    if res.status_code in (301, 302, 307, 308):
+        raise RuntimeError('GitHub API redirect could not be resolved safely')
     res.raise_for_status()
     return res.json()
 
@@ -68,7 +70,7 @@ async def investigate(value):
     name=parse_repo(value)
     headers={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'Skyglow-Evidence-First/1.0'}
     if os.getenv('GITHUB_TOKEN'): headers['Authorization']='Bearer '+os.environ['GITHUB_TOKEN']
-    async with httpx.AsyncClient(headers=headers,timeout=18,follow_redirects=False) as client:
+    async with httpx.AsyncClient(headers=headers,timeout=18,follow_redirects=True) as client:
         repo=await github_json(client,'/repos/'+name)
         commits=[]; releases=[]; contributors=[]
         errors=[]
