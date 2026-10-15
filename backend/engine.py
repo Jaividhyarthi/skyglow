@@ -194,7 +194,12 @@ async def investigate(value):
             else:
                 errors.append('stargazers: unexpected API response')
         except Exception as exc:
-            errors.append('stargazers: ' + str(exc)[:100])
+            errors.append(
+                'Individual stargazer data unavailable: GitHub API returned '
+                + str(exc.response.status_code)
+                if isinstance(exc, httpx.HTTPStatusError)
+                else 'Individual stargazer data unavailable: request failed'
+            )
         try:
             async with httpx.AsyncClient(
                 headers={
@@ -260,7 +265,7 @@ async def investigate(value):
         'metrics':{'stars':stars,'forks':forks,'open_issues':issues,'age_days':age,'days_since_push':pushed,'contributors_sample':len(contributors),'recent_commits_sample':len(commits),'releases_sample':len(releases)},
         'risks':{'popularity':{'score':popularity if popularity else None,'status':'heuristic review signals; not a fake-star probability' if popularity else 'no triggered signals; authenticity unverified'},'promotion_network':{'score':None,'status':'insufficient data'},'code_security':{'score':None,'status':'not scanned'},'maintenance':{'score':maintenance if maintenance else None,'status':'metadata-based maintenance concerns' if maintenance else 'no triggered maintenance concerns'}},
         'verdict':'Review signals detected' if popularity>=20 else 'Insufficient evidence to verify star authenticity',
-        'evidence':evidence,'graph':graph,'limitations':['Stargazer timestamps, when available, are sampled from the first API page only; the complete history and coordinated behavior remain unverified.','Popularity anomalies are not evidence of malware or wrongdoing.','Code was not scanned; security is unverified.','Scores are heuristics, not validated fake-star probabilities.']+errors,
+        'evidence':evidence,'graph':graph,'limitations':['Aggregate daily and weekly star history may be available. Individual stargazer timestamps, when accessible, are sampled from the first API page only; complete account-level history and coordinated behavior remain unverified.','Popularity anomalies are not evidence of malware or wrongdoing.','Code was not scanned; security is unverified.','Scores are heuristics, not validated fake-star probabilities.']+errors,
         'recent_commits':[{'sha':x.get('sha','')[:9],'message':(x.get('commit') or {}).get('message','').splitlines()[0][:120]} for x in commits[:8]],
         'contributors':[{'login':x.get('login'),'contributions':x.get('contributions')} for x in contributors[:12]],
         'is_demo':False
