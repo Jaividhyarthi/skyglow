@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import httpx
 from .engine import investigate,history,get_report,explain,parse_repo,init_db
+from .osv_scan import scan_npm_lockfile
 ROOT=Path(__file__).resolve().parents[1]
 @asynccontextmanager
 async def lifespan(app):
@@ -26,6 +27,15 @@ async def analyze(data:RepoInput):
     except ValueError as e:raise HTTPException(400,str(e))
     except httpx.HTTPStatusError as e:raise HTTPException(502,f'GitHub HTTP {e.response.status_code}')
     except (RuntimeError,httpx.RequestError) as e:raise HTTPException(503,str(e))
+@app.get('/api/security/{owner}/{repo}')
+async def security(owner:str,repo:str):
+    try:
+        name=parse_repo(owner+'/'+repo)
+        return await scan_npm_lockfile(name)
+    except ValueError as e:
+        raise HTTPException(400,str(e))
+    except httpx.RequestError:
+        raise HTTPException(503,'Security scan service unavailable')
 @app.get('/api/history')
 def past():return history()
 @app.get('/api/report/{report_id}')
