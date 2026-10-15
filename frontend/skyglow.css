@@ -7,3 +7,5 @@
 @media(max-width:800px){#sg-live-banner{left:8px;right:8px;top:4px;max-width:none}#sg-open{bottom:12px;right:12px}}
 
 #sg-workspace{position:relative;z-index:30;max-width:1080px;margin:36px auto;padding:28px;background:var(--sg-cream);color:var(--sg-ink);border:1px solid var(--sg-taupe);border-radius:12px;font:15px Geist,Arial,sans-serif;line-height:1.65}#sg-workspace h2{font:30px Newsreader,Georgia,serif;margin:0 0 12px}#sg-workspace ul{padding-left:22px}#sg-workspace li{padding:8px 0;border-bottom:1px solid var(--sg-taupe)}@media(max-width:800px){#sg-workspace{margin:16px 10px;padding:18px}}
+
+#sg-data-notice{position:relative;z-index:40;max-width:1080px;margin:24px auto;padding:18px 22px;border:1px solid var(--sg-taupe);background:var(--sg-cream);color:var(--sg-ink);border-radius:8px;font:14px Geist,Arial,sans-serif}body.sg-no-demo #sg-data-notice{visibility:visible}
