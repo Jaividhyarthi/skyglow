@@ -10,16 +10,16 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const style=document.createElement('style');
 style.textContent='body.sg-no-demo main,body.sg-no-demo [role="main"]{visibility:hidden}body.sg-no-demo #sg-workspace,body.sg-no-demo #sg-panel,body.sg-no-demo #sg-open,body.sg-no-demo #sg-live-banner{visibility:visible}';
 document.head.append(style);
-document.body.classList.add('sg-no-demo');
+if(location.pathname!=='/workspace')document.body.classList.add('sg-no-demo');
 const notice=document.createElement('section');
 notice.id='sg-data-notice';
 notice.setAttribute('role','status');
 notice.textContent='Verified analysis only: legacy sample dossiers and synthetic forensic claims are hidden. Use Live Evidence to investigate a public GitHub repository.';
-document.body.append(notice);
+if(location.pathname!=='/workspace')document.body.append(notice);
 const banner=document.createElement('div');banner.id='sg-live-banner';banner.innerHTML='<strong>Skyglow live analysis</strong> · Stitch artwork contains illustrative sample values. Only results in the Live Evidence panel are fetched and verified.';document.body.append(banner);
 const open=document.createElement('button');open.id='sg-open';open.textContent='◉ Live Evidence / Ask Skyglow';document.body.append(open);
 const panel=document.createElement('aside');panel.id='sg-panel';panel.setAttribute('aria-label','Live investigation panel');document.body.append(panel);
-if(location.pathname==='/workspace'){document.body.append(liveWorkspace);liveWorkspace.innerHTML='<h2>Verified repository investigation</h2><p>Run an investigation to view evidence-backed results here. Static design examples are not verified findings.</p>';}
+if(location.pathname==='/workspace'){(document.querySelector('main')||document.body).replaceChildren(liveWorkspace);liveWorkspace.innerHTML='<h2>Verified repository investigation</h2><p>Run an investigation to view evidence-backed results here. Static design examples are not verified findings.</p>';}
 function shell(){panel.innerHTML=`<div class="sg-flex" style="justify-content:space-between"><h2>Live investigation</h2><button id="sg-close" aria-label="Close panel">✕</button></div><p class="sg-label">Evidence-first GitHub intelligence</p><form id="sg-form" class="sg-flex"><input id="sg-url" placeholder="owner/repo or GitHub URL" aria-label="Repository URL" required><button class="sg-primary" id="sg-run">Investigate</button></form><div id="sg-status">Enter a public GitHub repository to begin.</div><div id="sg-output"></div><h3>Ask Skyglow</h3><form id="sg-ask-form" class="sg-flex"><input id="sg-question" placeholder="Why is this suspicious?" aria-label="Ask a question"><button class="sg-primary">Ask</button></form><div class="sg-controls"><button id="sg-mic">🎙 Speak question</button><button id="sg-speak">▶ ElevenLabs answer</button><button id="sg-stop">■ Stop</button></div><p id="sg-answer" aria-live="polite">Analyze a repository before asking.</p><h3>Recent investigations</h3><div id="sg-history"></div>`;
 $('#sg-close').onclick=()=>panel.classList.remove('open');$('#sg-form').onsubmit=e=>{e.preventDefault();run($('#sg-url').value)};$('#sg-ask-form').onsubmit=e=>{e.preventDefault();ask($('#sg-question').value)};$('#sg-speak').onclick=()=>speak($('#sg-answer').textContent);$('#sg-stop').onclick=()=>{if(window.sgAudio)window.sgAudio.pause();speechSynthesis?.cancel?.()};$('#sg-mic').onclick=listen;loadHistory();}
 shell();open.onclick=()=>panel.classList.toggle('open');
@@ -36,6 +36,7 @@ for(const a of document.querySelectorAll('nav a[data-path]')){const p=a.dataset.
 for(const a of document.querySelectorAll('a[data-path]')){if(routes[a.dataset.path])a.href=routes[a.dataset.path]}
 const current=location.pathname;document.querySelectorAll('nav a[data-path]').forEach(a=>{if(a.href.endsWith(current)&&current!=='/')a.setAttribute('aria-current','page')});
 const queryRepo=new URLSearchParams(location.search).get('repo');if(queryRepo)run(queryRepo);
+if(location.pathname==='/workspace'){const target=document.querySelector('header select');if(target){target.replaceChildren();const opt=document.createElement('option');opt.textContent='Choose a repository in Live Evidence';target.append(opt);target.onchange=()=>{if(target.value.includes('/'))run(target.value)}}}
 const input=$('#repo-target-input');if(input){input.value='';input.placeholder='https://github.com/owner/repository';}
 // Stitch HTML is retained as visual reference; backend-linked findings always appear in the live panel.
 })();
