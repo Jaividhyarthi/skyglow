@@ -5,6 +5,8 @@ import httpx
 import json
 import re
 import yaml
+from .python_dependencies import extract_pinned_requirements
+from .uv_dependencies import parse_uv_lock
 
 MAX_PACKAGES = 600
 BATCH_SIZE = 100
@@ -68,7 +70,19 @@ async def scan_npm_lockfile(repo_name: str):
             res = await client.get(f"https://api.github.com/repos/{repo_name}/contents/pnpm-lock.yaml", headers=headers)
             lockfile = "pnpm-lock.yaml"
         if res.status_code == 404:
-            return {"status": "unsupported", "reason": "No root package-lock.json or pnpm-lock.yaml found. No dependency scan performed.", "packages_scanned": 0, "findings": []}
+            res = await client.get(
+                f"https://api.github.com/repos/{repo_name}/contents/requirements.txt",
+                headers=headers,
+            )
+            lockfile = "requirements.txt"
+        if res.status_code == 404:
+            res = await client.get(
+                f"https://api.github.com/repos/{repo_name}/contents/uv.lock",
+                headers=headers,
+            )
+            lockfile = "uv.lock"
+        if res.status_code == 404:
+            return {"status": "unsupported", "reason": "No supported root dependency file found (package-lock.json, pnpm-lock.yaml, requirements.txt, uv.lock). No dependency scan performed.", "packages_scanned": 0, "findings": []}
         if res.status_code != 200:
             return {"status": "unavailable", "reason": f"GitHub lockfile retrieval failed (HTTP {res.status_code}).", "packages_scanned": 0, "findings": []}
         data = res.json()
@@ -78,35 +92,70 @@ async def scan_npm_lockfile(repo_name: str):
             raw = base64.b64decode(data["content"], validate=False)
             if len(raw) > MAX_LOCKFILE_BYTES:
                 raise ValueError("oversized lockfile")
-            lock = yaml.safe_load(raw) if lockfile == "pnpm-lock.yaml" else json.loads(raw)
+            lock = (
+                raw.decode("utf-8-sig")
+                if lockfile in ("requirements.txt", "uv.lock")
+                else yaml.safe_load(raw)
+                if lockfile == "pnpm-lock.yaml"
+                else json.loads(raw)
+            )
         except (ValueError, KeyError, TypeError, yaml.YAMLError):
             return {"status": "unsupported", "reason": "Could not parse dependency lockfile.", "packages_scanned": 0, "findings": []}
-        packages = lock.get("packages") if isinstance(lock, dict) else None
-        if not isinstance(packages, dict):
-            return {"status": "unsupported", "reason": "Unsupported lockfile package format.", "packages_scanned": 0, "findings": []}
-        unique = {}
-        if lockfile == "pnpm-lock.yaml":
-            unique = {entry: None for entry in extract_pnpm_versions(packages)}
+        ecosystem = "PyPI" if lockfile in ("requirements.txt", "uv.lock") else "npm"
+        skipped_count = 0
+
+        if ecosystem == "PyPI":
+            parsed = (
+                parse_uv_lock(lock)
+                if lockfile == "uv.lock"
+                else extract_pinned_requirements(lock)
+            )
+            unique = {entry: None for entry in parsed["packages"]}
+            skipped_count = (
+                parsed["skipped"]
+                if lockfile == "uv.lock"
+                else len(parsed["skipped"])
+            )
+            conditional_count = parsed.get("conditional", 0)
+            extras_count = parsed.get("extras", 0)
         else:
-            for path, meta in packages.items():
-                if not path or not isinstance(meta, dict) or "node_modules/" not in path:
-                    continue
-                name = path.rsplit("node_modules/", 1)[-1]
-                version = meta.get("version")
-                if not isinstance(version, str) or not name or not version or meta.get("link"):
-                    continue
-                unique[(name, version)] = None
+            packages = lock.get("packages") if isinstance(lock, dict) else None
+            if not isinstance(packages, dict):
+                return {"status": "unsupported", "reason": "Unsupported lockfile package format.", "packages_scanned": 0, "findings": []}
+            unique = {}
+            if lockfile == "pnpm-lock.yaml":
+                unique = {entry: None for entry in extract_pnpm_versions(packages)}
+            else:
+                for path, meta in packages.items():
+                    if not path or not isinstance(meta, dict) or "node_modules/" not in path:
+                        continue
+                    name = path.rsplit("node_modules/", 1)[-1]
+                    version = meta.get("version")
+                    if not isinstance(version, str) or not name or not version or meta.get("link"):
+                        continue
+                    unique[(name, version)] = None
         entries = sorted(unique)
         truncated = len(entries) > MAX_PACKAGES
         entries = entries[:MAX_PACKAGES]
         if not entries:
-            return {"status": "unsupported", "reason": "No versioned npm dependencies found.", "packages_scanned": 0, "findings": []}
+            if ecosystem == "PyPI" and skipped_count:
+                return {
+                    "status": "unsupported",
+                    "reason": f"Found {skipped_count} requirement lines, but none provided an assessable exact package version. No OSV queries performed.",
+                    "ecosystem": "PyPI",
+                    "lockfile": lockfile,
+                    "packages_scanned": 0,
+                    "total_packages": skipped_count,
+                    "skipped_requirements": skipped_count,
+                    "findings": [],
+                }
+            return {"status": "unsupported", "reason": "No exactly versioned dependencies found in the supported file.", "packages_scanned": 0, "findings": []}
         results = []
         scanned_entries = []
         batch_failed = False
         for offset in range(0, len(entries), BATCH_SIZE):
             batch = entries[offset:offset + BATCH_SIZE]
-            payload = {"queries": [{"package": {"ecosystem": "npm", "name": name}, "version": version} for name, version in batch]}
+            payload = {"queries": [{"package": {"ecosystem": ecosystem, "name": name}, "version": version} for name, version in batch]}
             try:
                 osv = await client.post("https://api.osv.dev/v1/querybatch", json=payload, timeout=35)
                 osv.raise_for_status()
@@ -148,16 +197,39 @@ async def scan_npm_lockfile(repo_name: str):
             except (httpx.HTTPError, ValueError, TypeError):
                 continue
     for item in findings:
-        item["details"] = {**{k: v for k, v in details[item["id"]].items() if k != "affected"}, "fixed_versions": applicable_fixed_versions(details[item["id"]], item["package"], item["version"])} if item["id"] in details else None
-    partial = truncated or batch_failed
+        item["details"] = {**{k: v for k, v in details[item["id"]].items() if k != "affected"}, "fixed_versions": applicable_fixed_versions(details[item["id"]], item["package"], item["version"]) if ecosystem == "npm" else []} if item["id"] in details else None
+    # requirements.txt is not a complete resolved dependency graph.
+    # All listed pins may be queried, but transitive coverage is unknown.
+    partial = (truncated or batch_failed or skipped_count > 0
+               or lockfile == "requirements.txt")
     scanned_count = len(scanned_entries)
     remaining = len(unique) - scanned_count
+    total_detected = len(unique) + skipped_count
     reason = (f"{scanned_count} of {len(unique)} unique dependency versions queried against OSV; "
               + (f"{remaining} unqueried due to a batch failure." if batch_failed else
                  f"{remaining} unqueried due to the {MAX_PACKAGES}-package limit." if truncated else
                  "All detected versions queried; not a full code or reachability audit."))
+    if ecosystem == "PyPI":
+        if lockfile == "requirements.txt":
+            reason += " requirements.txt is a manifest-based scan; transitive dependency coverage is not established."
+        else:
+            reason += " uv.lock provides resolved versions, but platform-specific and optional dependency applicability is not verified."
+        if conditional_count:
+            reason += f" {conditional_count} environment-marked requirements were queried without resolving their markers."
+        if extras_count:
+            reason += f" {extras_count} requirements specify extras whose transitive dependencies were not resolved."
+    if skipped_count:
+        reason += (
+            f" {skipped_count} non-PyPI or unsupported lockfile records were not assessed."
+            if lockfile == "uv.lock"
+            else f" {skipped_count} unpinned or unsupported requirement lines were not assessed."
+        )
     return {"status": "partial" if partial else "completed",
             "reason": reason, "packages_scanned": scanned_count,
-            "total_packages": len(unique), "findings": findings[:250],
+            "total_packages": total_detected, "ecosystem": ecosystem,
+            "skipped_requirements": skipped_count,
+"conditional_requirements": conditional_count if ecosystem == "PyPI" else 0,
+"unresolved_extras": extras_count if ecosystem == "PyPI" else 0,
+"findings": findings[:250],
             "findings_truncated": len(findings) > 250,
             "source": "OSV.dev querybatch", "lockfile": lockfile, "advisories_enriched": len(details), "advisory_detail_limit": MAX_ADVISORY_DETAILS}
