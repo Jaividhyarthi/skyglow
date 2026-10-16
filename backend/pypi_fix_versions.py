@@ -55,3 +55,35 @@ def applicable_pypi_fixed_versions(advisory, package_name, installed_version):
                     fixes.add(fixed)
 
     return sorted(fixes, key=Version)
+
+
+def pypi_upgrade_guidance(installed_version, fixed_versions):
+    """Summarize OSV fix candidates without asserting compatibility or safety."""
+    try:
+        installed = Version(installed_version)
+    except (InvalidVersion, TypeError):
+        return None
+
+    candidates = []
+    for value in fixed_versions:
+        try:
+            version = Version(value)
+        except (InvalidVersion, TypeError):
+            continue
+        if version > installed:
+            candidates.append((version, value))
+
+    if not candidates:
+        return None
+
+    preferred, label = min(candidates, key=lambda item: item[0])
+
+    return {
+        "preferred_candidate": label,
+        "major_version_change": preferred.major != installed.major,
+        "candidate_count": len(set(version for version, _ in candidates)),
+        "disclaimer": (
+            "OSV-reported candidate only; remediation, dependency "
+            "compatibility, and exploitability are not verified."
+        ),
+    }
