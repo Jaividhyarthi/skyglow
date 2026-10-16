@@ -7,7 +7,7 @@ import re
 import yaml
 from .python_dependencies import extract_pinned_requirements
 from .uv_dependencies import parse_uv_lock
-from .pypi_fix_versions import applicable_pypi_fixed_versions
+from .pypi_fix_versions import applicable_pypi_fixed_versions, pypi_upgrade_guidance
 
 MAX_PACKAGES = 600
 BATCH_SIZE = 100
@@ -199,6 +199,11 @@ async def scan_npm_lockfile(repo_name: str):
                 continue
     for item in findings:
         item["details"] = {**{k: v for k, v in details[item["id"]].items() if k != "affected"}, "fixed_versions": applicable_fixed_versions(details[item["id"]], item["package"], item["version"]) if ecosystem == "npm" else applicable_pypi_fixed_versions(details[item["id"]], item["package"], item["version"]) if ecosystem == "PyPI" else []} if item["id"] in details else None
+    for item in findings:
+        if ecosystem == "PyPI" and item.get("details"):
+            item["details"]["upgrade_guidance"] = pypi_upgrade_guidance(
+                item["version"], item["details"]["fixed_versions"]
+            )
     # requirements.txt is not a complete resolved dependency graph.
     # All listed pins may be queried, but transitive coverage is unknown.
     partial = (truncated or batch_failed or skipped_count > 0
