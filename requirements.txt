@@ -5,3 +5,4 @@ pydantic>=2.7,<3
 python-dotenv>=1.0,<2
 pytest>=8,<10
 PyYAML>=6.0.2,<7
+packaging>=24.0,<27
